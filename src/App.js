@@ -1,14 +1,59 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useSpeechRecognition, useSpeechSynthesis } from 'react-speech-kit';
 import generateGeminiResponse from './utils/geminiResponse';
+import useAppStore from './store/appStore';
 
 function App() {
-  const [file, setFile] = useState(null);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const abortControllerRef = useRef(null);
+  // Get state and actions from the store
+  const {
+    file, setFile,
+    question, setQuestion,
+    answer, resetAnswer, appendToAnswer,
+    loading, setLoading,
+    isListening, setIsListening,
+    isStreaming, setIsStreaming,
+    isSpeaking, setIsSpeaking,
+    setAbortController, cancelRequest
+  } = useAppStore();
+
+  // Speech recognition with react-speech-kit
+  const { listen, listening, stop } = useSpeechRecognition({
+    onResult: (result) => {
+      setQuestion(result);
+    },
+    onEnd: () => {
+      setIsListening(false);
+    },
+    onError: (event) => {
+      console.error('Speech recognition error:', event);
+      setIsListening(false);
+    }
+  });
+
+  // Update isListening state when listening changes
+  useEffect(() => {
+    setIsListening(listening);
+  }, [listening, setIsListening]);
+
+  // Speech synthesis with react-speech-kit
+  const { speak, cancel, speaking } = useSpeechSynthesis();
+
+  // Update isSpeaking state when speaking changes
+  useEffect(() => {
+    setIsSpeaking(speaking);
+  }, [speaking, setIsSpeaking]);
+
+  // Function to speak text
+  const speakText = (text) => {
+    if (text) {
+      speak({ text });
+    }
+  };
+
+  // Function to stop speaking
+  const stopSpeaking = () => {
+    cancel();
+  };
 
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -28,79 +73,7 @@ function App() {
   };
 
   const startListening = () => {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setQuestion(transcript);
-        setIsListening(false);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.start();
-    } else {
-      alert('Speech recognition is not supported in your browser.');
-    }
-  };
-
-  // const handleCancel = () => {
-  //   if (abortControllerRef.current) {
-  //     abortControllerRef.current.abort();
-  //     abortControllerRef.current = null;
-  //   }
-  //   setIsStreaming(false);
-  // };
-
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const speechSynthesisRef = useRef(null);
-  
-  // Initialize speech synthesis
-  useEffect(() => {
-    speechSynthesisRef.current = window.speechSynthesis;
-    return () => {
-      if (speechSynthesisRef.current) {
-        speechSynthesisRef.current.cancel();
-      }
-    };
-  }, []);
-
-  // Function to speak text
-  const speakText = (text) => {
-    if (speechSynthesisRef.current) {
-      // Cancel any ongoing speech
-      speechSynthesisRef.current.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      
-      setIsSpeaking(true);
-      speechSynthesisRef.current.speak(utterance);
-    }
-  };
-
-  // Function to stop speaking
-  const stopSpeaking = () => {
-    if (speechSynthesisRef.current) {
-      speechSynthesisRef.current.cancel();
-      setIsSpeaking(false);
-    }
+    listen();
   };
 
   const handleSubmit = async (e) => {
@@ -108,20 +81,22 @@ function App() {
     if (!question.trim()) return;
 
     setLoading(true);
-    setAnswer('');
+    resetAnswer();
     setIsStreaming(true);
-    stopSpeaking(); // Stop any ongoing speech
+    stopSpeaking();
     
-    abortControllerRef.current = new AbortController();
+    // Create a new AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
 
     try {
       let accumulatedText = '';
       await generateGeminiResponse(
         question,
         (chunk) => {
-          if (!abortControllerRef.current?.signal.aborted) {
+          if (!controller.signal.aborted) {
             accumulatedText += chunk;
-            setAnswer(accumulatedText);
+            appendToAnswer(chunk);
             
             // Speak when we get a complete sentence
             if (['.', '!', '?', '\n'].includes(chunk)) {
@@ -130,7 +105,7 @@ function App() {
             }
           }
         },
-        abortControllerRef.current.signal
+        controller.signal
       );
       
       // Speak any remaining text
@@ -143,22 +118,13 @@ function App() {
         stopSpeaking();
       } else {
         console.error('Error:', error);
-        setAnswer('Error: Failed to get response from AI');
+        appendToAnswer('Error: Failed to get response from AI');
       }
     } finally {
       setLoading(false);
       setIsStreaming(false);
-      abortControllerRef.current = null;
+      setAbortController(null);
     }
-  };
-
-  const handleCancel = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setIsStreaming(false);
-    stopSpeaking();
   };
 
   return (
@@ -239,18 +205,18 @@ function App() {
 
               <button 
                 type="button"
-                onClick={startListening}
+                onClick={isListening ? stop : startListening}
                 className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                disabled={loading || isListening}
+                disabled={loading}
               >
                 <span className="text-blue-500 mr-1">🎤</span>
-                {isListening ? 'Listening...' : 'Voice'}
+                {isListening ? 'Stop Listening' : 'Voice'}
               </button>
 
               {isStreaming && (
                 <button
                   type="button"
-                  onClick={handleCancel}
+                  onClick={cancelRequest}
                   className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
                 >
                   <span className="text-red-500 mr-1">⏹</span>

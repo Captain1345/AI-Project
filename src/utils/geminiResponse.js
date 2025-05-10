@@ -23,6 +23,7 @@ async function generateGeminiResponse(userInput, onChunk, signal) {
 
     const result = await model.generateContent(userInput);
     const response = await result.response;
+    console.log("GEMINI RESPONSE", response);
     const text = response.text();
     
     // Simulate streaming by sending one character at a time
