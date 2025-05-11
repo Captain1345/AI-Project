@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const GEMINI_API_KEY = 'AIzaSyDBUEXSzSrMc12ZhYcLh8E-hSxr6S6eJp0';
+// Use environment variable for API key
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
