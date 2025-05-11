@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useSpeechRecognition, useSpeechSynthesis } from 'react-speech-kit';
+import React from 'react';
 import generateGeminiResponse from './utils/geminiResponse';
 import useAppStore from './store/appStore';
+import { AiFillFilePdf } from 'react-icons/ai';
 
 function App() {
   // Get state and actions from the store
@@ -10,70 +10,32 @@ function App() {
     question, setQuestion,
     answer, resetAnswer, appendToAnswer,
     loading, setLoading,
-    isListening, setIsListening,
     isStreaming, setIsStreaming,
-    isSpeaking, setIsSpeaking,
     setAbortController, cancelRequest
   } = useAppStore();
 
-  // Speech recognition with react-speech-kit
-  const { listen, listening, stop } = useSpeechRecognition({
-    onResult: (result) => {
-      setQuestion(result);
-    },
-    onEnd: () => {
-      setIsListening(false);
-    },
-    onError: (event) => {
-      console.error('Speech recognition error:', event);
-      setIsListening(false);
-    }
-  });
-
-  // Update isListening state when listening changes
-  useEffect(() => {
-    setIsListening(listening);
-  }, [listening, setIsListening]);
-
-  // Speech synthesis with react-speech-kit
-  const { speak, cancel, speaking } = useSpeechSynthesis();
-
-  // Update isSpeaking state when speaking changes
-  useEffect(() => {
-    setIsSpeaking(speaking);
-  }, [speaking, setIsSpeaking]);
-
-  // Function to speak text
-  const speakText = (text) => {
-    if (text) {
-      speak({ text });
-    }
-  };
-
-  // Function to stop speaking
-  const stopSpeaking = () => {
-    cancel();
-  };
+  const [uploadedFiles, setUploadedFiles] = React.useState([]);
 
   const handleFileUpload = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      console.log("FILE UPLOADED", newFiles);
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+      setFile(newFiles[0]); // Keep the first file as the active file for processing
     }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0]);
+      const newFile = e.dataTransfer.files[0];
+      setUploadedFiles(prev => [...prev, newFile]);
+      setFile(newFile);
     }
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
-  };
-
-  const startListening = () => {
-    listen();
   };
 
   const handleSubmit = async (e) => {
@@ -83,39 +45,24 @@ function App() {
     setLoading(true);
     resetAnswer();
     setIsStreaming(true);
-    stopSpeaking();
     
     // Create a new AbortController for this request
     const controller = new AbortController();
     setAbortController(controller);
 
     try {
-      let accumulatedText = '';
       await generateGeminiResponse(
         question,
         (chunk) => {
           if (!controller.signal.aborted) {
-            accumulatedText += chunk;
             appendToAnswer(chunk);
-            
-            // Speak when we get a complete sentence
-            if (['.', '!', '?', '\n'].includes(chunk)) {
-              speakText(accumulatedText);
-              accumulatedText = '';
-            }
           }
         },
         controller.signal
       );
-      
-      // Speak any remaining text
-      if (accumulatedText) {
-        speakText(accumulatedText);
-      }
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('Request was cancelled');
-        stopSpeaking();
       } else {
         console.error('Error:', error);
         appendToAnswer('Error: Failed to get response from AI');
@@ -124,6 +71,34 @@ function App() {
       setLoading(false);
       setIsStreaming(false);
       setAbortController(null);
+    }
+  };
+
+  const senddFilesForChunking = async () => {
+    try {
+      const formData = new FormData();
+      uploadedFiles.forEach((file, index) => {
+        formData.append(`files`, file);
+      });
+
+      const response = await fetch('http://localhost:8001/api/convert-pdfs-chunks', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process PDFs');
+      }
+
+      const result = await response.json();
+      console.log('PDF Chunks response:', result);
+      
+      // Handle the successful response here
+      // You can add state to show processing status if needed
+
+    } catch (error) {
+      console.error('Error processing PDFs:', error);
+      // Handle error state here
     }
   };
 
@@ -141,7 +116,7 @@ function App() {
         <div 
           className="border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer mb-4"
           onDrop={handleDrop}
-          onDragOver={handleDragOver}
+          onDragOver={(e) => e.preventDefault()}
         >
           <p className="text-sm text-gray-600 mb-1">Drag and drop file here</p>
           <p className="text-xs text-gray-500 mb-2">Limit 200MB per file • PDF</p>
@@ -151,6 +126,7 @@ function App() {
             className="hidden"
             accept=".pdf"
             onChange={handleFileUpload}
+            multiple
           />
           <button 
             onClick={() => document.getElementById('file-upload').click()}
@@ -159,10 +135,26 @@ function App() {
             Browse files
           </button>
         </div>
+
+        {/* Display uploaded files */}
+        <div className="space-y-2 mb-4">
+          {uploadedFiles.map((file, index) => (
+            <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
+              <div className="w-8 h-8 flex-shrink-0 mr-2 flex items-center justify-center">
+                <AiFillFilePdf className="text-red-500 w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-900 truncate">{file.name}</p>
+                <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
+            </div>
+          ))}
+        </div>
         
         <button 
           className="mt-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center"
           disabled={!file}
+          onClick={senddFilesForChunking}
         >
           <span className="mr-2">⚙️</span>
           Process
@@ -189,7 +181,7 @@ function App() {
                 onChange={(e) => setQuestion(e.target.value)}
                 className="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Type your question here"
-                disabled={loading || isListening}
+                disabled={loading}
               />
             </div>
             
@@ -197,20 +189,10 @@ function App() {
               <button 
                 type="submit"
                 className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                disabled={loading || !question.trim() || isListening}
+                disabled={loading || !question.trim()}
               >
                 <span className="text-orange-500 mr-1">🔥</span>
                 {loading ? 'Processing...' : 'Ask'}
-              </button>
-
-              <button 
-                type="button"
-                onClick={isListening ? stop : startListening}
-                className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                disabled={loading}
-              >
-                <span className="text-blue-500 mr-1">🎤</span>
-                {isListening ? 'Stop Listening' : 'Voice'}
               </button>
 
               {isStreaming && (
@@ -221,17 +203,6 @@ function App() {
                 >
                   <span className="text-red-500 mr-1">⏹</span>
                   Stop
-                </button>
-              )}
-
-              {answer && (
-                <button
-                  type="button"
-                  onClick={isSpeaking ? stopSpeaking : () => speakText(answer)}
-                  className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                >
-                  <span className="text-green-500 mr-1">{isSpeaking ? '⏹' : '🔊'}</span>
-                  {isSpeaking ? 'Stop Speaking' : 'Speak'}
                 </button>
               )}
             </div>
