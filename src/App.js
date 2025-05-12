@@ -2,6 +2,7 @@ import React from 'react';
 import generateGeminiResponse from './utils/geminiResponse';
 import useAppStore from './store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
+import axios from 'axios';
 
 function App() {
   // Get state and actions from the store
@@ -13,7 +14,7 @@ function App() {
     isStreaming, setIsStreaming,
     setAbortController, cancelRequest
   } = useAppStore();
-
+  const [error, setError] = React.useState(null);
   const [uploadedFiles, setUploadedFiles] = React.useState([]);
 
   const handleFileUpload = (e) => {
@@ -92,13 +93,38 @@ function App() {
 
       const result = await response.json();
       console.log('PDF Chunks response:', result);
-      
+      if (!result.raw_chunks) {
+        throw new Error('No chunks received from PDF processing');
+      }
+      const vectorCollectionResponse = await addToVectorCollection(result.raw_chunks, "Sumant Name");
+      console.log('Vector Collection Response:', vectorCollectionResponse);
       // Handle the successful response here
       // You can add state to show processing status if needed
 
     } catch (error) {
       console.error('Error processing PDFs:', error);
       // Handle error state here
+    }
+  };
+
+
+  const addToVectorCollection = async (chunks, fileName) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post('http://localhost:8001/api/vector-collection/add', {
+        chunks: chunks.map(chunk => ({
+          page_content: chunk.page_content,
+          metadata: chunk.metadata
+        })),
+        fileName: fileName
+      });
+      return response.data;
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to add to vector collection');
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
