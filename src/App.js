@@ -39,7 +39,7 @@ function App() {
     e.preventDefault();
   };
 
-  const handleSubmit = async (e) => {
+  const handleGeminiSubmit = async (e) => {
     e.preventDefault();
     if (!question.trim()) return;
 
@@ -72,6 +72,39 @@ function App() {
       setLoading(false);
       setIsStreaming(false);
       setAbortController(null);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+  
+    setLoading(true);
+    resetAnswer();
+    
+    try {
+      const response = await fetch('http://localhost:8001/api/vector-collection/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: question
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to get response from vector collection');
+      }
+  
+      const result = await response.json();
+      appendToAnswer(result.answer || JSON.stringify(result, null, 2));
+  
+    } catch (error) {
+      console.error('Error:', error);
+      appendToAnswer('Error: Failed to get response from vector collection');
+    } finally {
+      setLoading(false);
     }
   };
 
