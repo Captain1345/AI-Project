@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import generateGeminiResponse from './utils/geminiResponse';
 import useAppStore from './store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
@@ -228,87 +229,89 @@ function App() {
       </div>
 
       {/* Right Panel - Question Answer */}
-      <div className="flex-1 p-8 flex flex-col items-center">
-        <div className="w-full max-w-3xl">
-          <div className="flex items-center mb-6">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-              <span className="text-blue-600">🌐</span>
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Fixed header section */}
+        <div className="p-8 flex-shrink-0">
+          <div className="w-full max-w-3xl mx-auto">
+            <div className="flex flex-col items-center mb-8">
+              <h1 className="text-3xl font-semibold text-gray-800 mb-4">Better PM</h1>
+              <div className="w-full relative">
+                <input
+                  type="text"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !loading && question.trim()) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                  className="w-full border border-gray-300 rounded-full py-4 px-6 pr-32 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                  placeholder="Ask anything"
+                  disabled={loading}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {isStreaming && (
+                    <button
+                      type="button"
+                      onClick={cancelRequest}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                      title="Stop"
+                    >
+                      <span className="text-red-500">⏹</span>
+                    </button>
+                  )}
+                  <button 
+                    onClick={handleSubmit}
+                    disabled={loading || !question.trim()}
+                    className="bg-black text-white rounded-full p-3 px-6 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {loading ? 'Processing...' : 'Ask'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <h1 className="text-2xl font-medium text-gray-800">Better PM</h1>
           </div>
-          
-          <p className="text-sm text-gray-600 mb-2">Ask a question related to your documents:</p>
-          
-          <form onSubmit={handleSubmit} className="w-full">
-            <div className="relative mb-4">
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                className="w-full border border-gray-300 rounded-md py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Type your question here"
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <button 
-                type="submit"
-                className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                disabled={loading || !question.trim()}
-              >
-                <span className="text-orange-500 mr-1">🔥</span>
-                {loading ? 'Processing...' : 'Ask'}
-              </button>
+        </div>
 
-              {isStreaming && (
-                <button
-                  type="button"
-                  onClick={cancelRequest}
-                  className="bg-white border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center hover:bg-gray-50"
-                >
-                  <span className="text-red-500 mr-1">⏹</span>
-                  Stop
-                </button>
-              )}
-            </div>
-          </form>
-
-          {answer && (
-            <div className="mt-6 p-4 bg-white rounded-lg shadow">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-medium">Answer:</h2>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setShowDocuments(!showDocuments)}
-                    className="p-1 hover:bg-gray-100 rounded"
-                    title="Show Documents"
-                  >
-                    📄
-                  </button>
-                  <button 
-                    onClick={() => setShowIds(!showIds)}
-                    className="p-1 hover:bg-gray-100 rounded"
-                    title="Show IDs"
-                  >
-                    🔍
-                  </button>
+        {/* Scrollable content section */}
+        <div className="flex-1 overflow-y-auto px-8 pb-8">
+          <div className="w-full max-w-3xl mx-auto">
+            {answer?.llmResponse && (
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-medium">Answer:</h2>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setShowDocuments(!showDocuments)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      title="Show Documents"
+                    >
+                      📄
+                    </button>
+                    <button 
+                      onClick={() => setShowIds(!showIds)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                      title="Show IDs"
+                    >
+                      🔍
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="text-gray-700 prose prose-lg max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg">
+                    <ReactMarkdown>{answer.llmResponse}</ReactMarkdown>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-md font-medium text-gray-700">LLM Response:</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{answer.llmResponse}</p>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
       {/* Right Sidebars */}
       {showDocuments && (
-        <div className="fixed right-0 top-0 h-screen w-80 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
+        <div className="fixed right-0 top-0 h-screen w-96 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Documents</h3>
             <button 
@@ -318,20 +321,26 @@ function App() {
               ✕
             </button>
           </div>
-          {Array.isArray(answer?.documents) ? (
-            <ul className="list-disc pl-5">
-              {answer.documents.map((doc, index) => (
-                <li key={index} className="text-gray-700">{doc}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-700 whitespace-pre-wrap">{answer?.documents}</p>
-          )}
+          <div className="prose prose-sm max-w-none">
+            {Array.isArray(answer?.documents) ? (
+              <ul className="list-disc pl-5">
+                {answer.documents.map((doc, index) => (
+                  <li key={index} className="text-gray-700">
+                    <ReactMarkdown>{doc}</ReactMarkdown>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ReactMarkdown className="text-gray-700 whitespace-pre-wrap">
+                {answer?.documents || ''}
+              </ReactMarkdown>
+            )}
+          </div>
         </div>
       )}
 
       {showIds && (
-        <div className="fixed right-0 top-0 h-screen w-80 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
+        <div className="fixed right-0 top-0 h-screen w-96 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">IDs</h3>
             <button 
