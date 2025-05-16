@@ -9,13 +9,15 @@ function App() {
   const {
     file, setFile,
     question, setQuestion,
-    answer, resetAnswer, appendToAnswer,
+    answer, resetAnswer, appendToAnswer, setAnswer,
     loading, setLoading,
     isStreaming, setIsStreaming,
     setAbortController, cancelRequest
   } = useAppStore();
   const [error, setError] = React.useState(null);
   const [uploadedFiles, setUploadedFiles] = React.useState([]);
+  const [showDocuments, setShowDocuments] = React.useState(false);
+  const [showIds, setShowIds] = React.useState(false);
 
   const handleFileUpload = (e) => {
     if (e.target.files) {
@@ -98,7 +100,12 @@ function App() {
       }
   
       const result = await response.json();
-      appendToAnswer(result.answer || JSON.stringify(result, null, 2));
+      setAnswer({
+        llmResponse: result.llmResponse || '',
+        documents: result.results.documents[0] || '',
+        ids: result.results.ids[0] || '',
+      });
+      console.log("ANSWER", answer);
   
     } catch (error) {
       console.error('Error:', error);
@@ -269,12 +276,82 @@ function App() {
 
           {answer && (
             <div className="mt-6 p-4 bg-white rounded-lg shadow">
-              <h2 className="text-lg font-medium mb-2">Answer:</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{answer}</p>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-medium">Answer:</h2>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowDocuments(!showDocuments)}
+                    className="p-1 hover:bg-gray-100 rounded"
+                    title="Show Documents"
+                  >
+                    📄
+                  </button>
+                  <button 
+                    onClick={() => setShowIds(!showIds)}
+                    className="p-1 hover:bg-gray-100 rounded"
+                    title="Show IDs"
+                  >
+                    🔍
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-md font-medium text-gray-700">LLM Response:</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{answer.llmResponse}</p>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Right Sidebars */}
+      {showDocuments && (
+        <div className="fixed right-0 top-0 h-screen w-80 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">Documents</h3>
+            <button 
+              onClick={() => setShowDocuments(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          {Array.isArray(answer?.documents) ? (
+            <ul className="list-disc pl-5">
+              {answer.documents.map((doc, index) => (
+                <li key={index} className="text-gray-700">{doc}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-700 whitespace-pre-wrap">{answer?.documents}</p>
+          )}
+        </div>
+      )}
+
+      {showIds && (
+        <div className="fixed right-0 top-0 h-screen w-80 bg-white shadow-lg p-4 overflow-y-auto transition-transform transform">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium">IDs</h3>
+            <button 
+              onClick={() => setShowIds(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+          {Array.isArray(answer?.ids) ? (
+            <ul className="list-disc pl-5">
+              {answer.ids.map((id, index) => (
+                <li key={index} className="text-gray-700">{id}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-700 whitespace-pre-wrap">{answer?.ids}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

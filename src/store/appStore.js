@@ -8,9 +8,15 @@ const useAppStore = create((set) => ({
   // Question and answer state
   question: '',
   setQuestion: (question) => set({ question }),
-  answer: '',
+  answer: { llmResponse: '', documents: '', ids: '' },
   setAnswer: (answer) => set({ answer }),
-  appendToAnswer: (chunk) => set((state) => ({ answer: state.answer + chunk })),
+  // Update appendToAnswer to handle object updates
+  appendToAnswer: (chunk) => set((state) => ({ 
+    answer: typeof chunk === 'string' 
+      ? { ...state.answer, llmResponse: state.answer.llmResponse + chunk }
+      : { ...state.answer, ...chunk }
+  })),
+  resetAnswer: () => set({ answer: { llmResponse: '', documents: '', ids: '' } }),
   
   // UI state
   loading: false,
