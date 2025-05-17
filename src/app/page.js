@@ -6,6 +6,7 @@ import generateGeminiResponse from '../utils/geminiResponse';
 import useAppStore from '../store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
 import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from '../services/api';
+import { createConversation, createMessage } from '../services/supabaseService.js';
 
 export default function Home() {
   // Get state and actions from the store
@@ -88,8 +89,13 @@ export default function Home() {
   
     setLoading(true);
     resetAnswer();
-    
+  
     try {
+      // Use the new service function
+      const conversation = await createConversation('6156270a-2ead-4294-a6b1-d98ae892de6b', question);
+      const message = await createMessage(conversation.id,'user',question)
+      
+      // Continue with the existing query logic
       const result = await queryVectorCollection(question);
       setAnswer({
         llmResponse: result.llmResponse || '',
