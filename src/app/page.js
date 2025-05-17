@@ -99,12 +99,12 @@ export default function Home() {
       
       router.push(`/${conversation.id}`);
       // Continue with the existing query logic
-      const result = await queryVectorCollection(question);
-      setAnswer({
-        llmResponse: result.llmResponse || '',
-        documents: result.results.documents[0] || '',
-        ids: result.results.ids[0] || '',
-      });
+      // const result = await queryVectorCollection(question);
+      // setAnswer({
+      //   llmResponse: result.llmResponse || '',
+      //   documents: result.results.documents[0] || '',
+      //   ids: result.results.ids[0] || '',
+      // });
     } catch (error) {
       console.error('Error:', error);
       appendToAnswer('Error: Failed to get response from vector collection');

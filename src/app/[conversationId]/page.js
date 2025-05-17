@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { createMessage, fetchMessages } from '../../services/supabaseService';
+import { queryVectorCollection } from '../../services/api';
 
 export default function ConversationPage() {
   const router = useRouter();
@@ -19,6 +20,19 @@ export default function ConversationPage() {
     try {
       const data = await fetchMessages(params.conversationId);
       setMessages(data);
+      const result = await queryVectorCollection(data[0].content);
+      await createMessage(
+        params.conversationId,
+        'assistant',
+        result.llmResponse || '',
+        result.results.documents[0],
+        result.results.ids[0],
+      );
+      const updatedData = await fetchMessages(params.conversationId);
+      console.log("UPDATED DATA", updatedData); // Add this line to check the data being returned by the API call
+      setMessages(updatedData);
+      setLoading(false);
+      
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
