@@ -1,11 +1,13 @@
+'use client';
+
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import generateGeminiResponse from './utils/geminiResponse';
-import useAppStore from './store/appStore';
+import generateGeminiResponse from '../utils/geminiResponse';
+import useAppStore from '../store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
-import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from './services/api';
+import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from '../services/api';
 
-function App() {
+export default function Home() {
   // Get state and actions from the store
   const {
     file, setFile,
@@ -20,6 +22,8 @@ function App() {
   const [showDocuments, setShowDocuments] = React.useState(false);
   const [showIds, setShowIds] = React.useState(false);
 
+  // Copy all your existing functions here (handleFileUpload, handleDrop, etc.)
+  // ...
   const handleFileUpload = (e) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -108,6 +112,7 @@ function App() {
       if (!result.raw_chunks) {
         throw new Error('No chunks received from PDF processing');
       }
+      console.log(result)
       const vectorCollectionResponse = await addToVectorCollection(result.raw_chunks, "Sumant Name");
       console.log('Vector Collection Response:', vectorCollectionResponse);
     } catch (error) {
@@ -118,10 +123,9 @@ function App() {
     }
   };
 
-  // Remove the duplicate addToVectorCollection function since we're importing it from services/api.js
 
   return (
-    <div className="flex h-screen bg-gray-100">
+<div className="flex h-screen bg-gray-100">
       {/* Left Panel - File Upload */}
       <div className="w-1/6 min-w-[200px] bg-white border-r border-gray-200 p-4 flex flex-col">
         <div className="mb-4">
@@ -175,7 +179,7 @@ function App() {
           onClick={senddFilesForChunking}
         >
           <span className="mr-2">⚙️</span>
-          Process
+          {loading ? 'File Uploading...' : 'Process'}
         </button>
       </div>
 
@@ -216,7 +220,7 @@ function App() {
                     onClick={handleSubmit}
                     disabled={loading || !question.trim()}
                     className="bg-black text-white rounded-full p-3 px-6 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
+                   >
                     {loading ? 'Processing...' : 'Ask'}
                   </button>
                 </div>
@@ -311,6 +315,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
-
