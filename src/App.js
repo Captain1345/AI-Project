@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import generateGeminiResponse from './utils/geminiResponse';
 import useAppStore from './store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
-import axios from 'axios';
+import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from './services/api';
 
 function App() {
   // Get state and actions from the store
@@ -86,28 +86,12 @@ function App() {
     resetAnswer();
     
     try {
-      const response = await fetch('http://localhost:8001/api/vector-collection/query', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          prompt: question
-        })
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to get response from vector collection');
-      }
-  
-      const result = await response.json();
+      const result = await queryVectorCollection(question);
       setAnswer({
         llmResponse: result.llmResponse || '',
         documents: result.results.documents[0] || '',
         ids: result.results.ids[0] || '',
       });
-      console.log("ANSWER", answer);
-  
     } catch (error) {
       console.error('Error:', error);
       appendToAnswer('Error: Failed to get response from vector collection');
@@ -117,57 +101,24 @@ function App() {
   };
 
   const senddFilesForChunking = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const formData = new FormData();
-      uploadedFiles.forEach((file, index) => {
-        formData.append(`files`, file);
-      });
-
-      const response = await fetch('http://localhost:8001/api/convert-pdfs-chunks', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to process PDFs');
-      }
-
-      const result = await response.json();
-      console.log('PDF Chunks response:', result);
+      const result = await convertPDFsToChunks(uploadedFiles);
       if (!result.raw_chunks) {
         throw new Error('No chunks received from PDF processing');
       }
       const vectorCollectionResponse = await addToVectorCollection(result.raw_chunks, "Sumant Name");
       console.log('Vector Collection Response:', vectorCollectionResponse);
-      // Handle the successful response here
-      // You can add state to show processing status if needed
-
     } catch (error) {
       console.error('Error processing PDFs:', error);
-      // Handle error state here
-    }
-  };
-
-
-  const addToVectorCollection = async (chunks, fileName) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.post('http://localhost:8001/api/vector-collection/add', {
-        chunks: chunks.map(chunk => ({
-          page_content: chunk.page_content,
-          metadata: chunk.metadata
-        })),
-        fileName: fileName
-      });
-      return response.data;
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to add to vector collection');
-      throw err;
+      setError('Failed to process PDFs');
     } finally {
       setLoading(false);
     }
   };
+
+  // Remove the duplicate addToVectorCollection function since we're importing it from services/api.js
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -230,9 +181,9 @@ function App() {
 
       {/* Right Panel - Question Answer */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Fixed header section */}
-        <div className="p-8 flex-shrink-0">
-          <div className="w-full max-w-3xl mx-auto">
+        {/* Center the content vertically */}
+        <div className="flex-1 flex flex-col justify-center items-center px-8">
+          <div className="w-full max-w-3xl">
             <div className="flex flex-col items-center mb-8">
               <h1 className="text-3xl font-semibold text-gray-800 mb-4">Better PM</h1>
               <div className="w-full relative">
@@ -271,14 +222,10 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Scrollable content section */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8">
-          <div className="w-full max-w-3xl mx-auto">
+            {/* Answer section */}
             {answer?.llmResponse && (
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-lg shadow p-4 mt-8">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-medium">Answer:</h2>
                   <div className="flex gap-2">
