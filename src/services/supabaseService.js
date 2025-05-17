@@ -25,3 +25,14 @@ export const createMessage = async (conversationId, sender, content, metadata = 
   if (error) throw error;
   return data[0];
 };
+
+export const fetchMessages = async (conversationId) => {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+};
