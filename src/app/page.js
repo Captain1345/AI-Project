@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useRouter } from 'next/navigation';
 import generateGeminiResponse from '../utils/geminiResponse';
 import useAppStore from '../store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
@@ -23,6 +24,7 @@ export default function Home() {
   const [showDocuments, setShowDocuments] = React.useState(false);
   const [showIds, setShowIds] = React.useState(false);
 
+  const router = useRouter();
   // Copy all your existing functions here (handleFileUpload, handleDrop, etc.)
   // ...
   const handleFileUpload = (e) => {
@@ -95,6 +97,7 @@ export default function Home() {
       const conversation = await createConversation('6156270a-2ead-4294-a6b1-d98ae892de6b', question);
       const message = await createMessage(conversation.id,'user',question)
       
+      router.push(`/${conversation.id}`);
       // Continue with the existing query logic
       const result = await queryVectorCollection(question);
       setAnswer({
