@@ -36,3 +36,14 @@ export const fetchMessages = async (conversationId) => {
   if (error) throw error;
   return data || [];
 };
+
+export const fetchConversations = async (userId) => {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};

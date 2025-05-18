@@ -8,6 +8,7 @@ import useAppStore from '../store/appStore';
 import { AiFillFilePdf } from 'react-icons/ai';
 import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from '../services/api';
 import { createConversation, createMessage } from '../services/supabaseService.js';
+import ConversationsList from '../components/ConversationsList';
 
 export default function Home() {
   // Get state and actions from the store
@@ -26,7 +27,6 @@ export default function Home() {
 
   const router = useRouter();
   // Copy all your existing functions here (handleFileUpload, handleDrop, etc.)
-  // ...
   const handleFileUpload = (e) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -190,6 +190,7 @@ export default function Home() {
           <span className="mr-2">⚙️</span>
           {loading ? 'File Uploading...' : 'Process'}
         </button>
+        <ConversationsList userId="6156270a-2ead-4294-a6b1-d98ae892de6b" />
       </div>
 
       {/* Right Panel - Question Answer */}
