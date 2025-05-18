@@ -20,19 +20,24 @@ export default function ConversationPage() {
     try {
       const data = await fetchMessages(params.conversationId);
       setMessages(data);
-      const result = await queryVectorCollection(data[0].content);
-      await createMessage(
-        params.conversationId,
-        'assistant',
-        result.llmResponse || '',
-        result.results.documents[0],
-        result.results.ids[0],
-      );
-      const updatedData = await fetchMessages(params.conversationId);
-      console.log("UPDATED DATA", updatedData); // Add this line to check the data being returned by the API call
-      setMessages(updatedData);
-      setLoading(false);
+      console.log("MESSAGE", data);
       
+      // Check if there are messages and if the latest message is from a user
+      if (data.length > 0 && data[data.length-1].sender === 'user') {
+        const result = await queryVectorCollection(data[0].content);
+        await createMessage(
+          params.conversationId,
+          'assistant',
+          result.llmResponse || '',
+          result.results.documents[0],
+          result.results.ids[0],
+        );
+        // Refresh messages to include the new assistant response
+        const updatedData = await fetchMessages(params.conversationId);
+        setMessages(updatedData);
+      }
+      
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
