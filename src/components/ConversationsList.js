@@ -24,7 +24,7 @@ export default function ConversationsList({ userId }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto border-b border-gray-200">
+    <div className="flex-1 border-b border-gray-200">
       <div className="p-4">
         <h3 className="text-sm font-medium text-gray-600 mb-4">
           <span className="mr-2">💬</span>

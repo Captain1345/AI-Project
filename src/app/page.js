@@ -5,23 +5,20 @@ import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
 import generateGeminiResponse from '../utils/geminiResponse';
 import useAppStore from '../store/appStore';
-import { AiFillFilePdf } from 'react-icons/ai';
-import { queryVectorCollection, convertPDFsToChunks, addToVectorCollection } from '../services/api';
+import {convertPDFsToChunks, addToVectorCollection } from '../services/api';
 import { createConversation, createMessage } from '../services/supabaseService.js';
 import ConversationsList from '../components/ConversationsList';
+import FileUpload from '../components/FileUpload';
 
 export default function Home() {
-  // Get state and actions from the store
+  // Remove file-related state and functions
   const {
-    file, setFile,
     question, setQuestion,
     answer, resetAnswer, appendToAnswer, setAnswer,
     loading, setLoading,
     isStreaming, setIsStreaming,
     setAbortController, cancelRequest
   } = useAppStore();
-  const [error, setError] = React.useState(null);
-  const [uploadedFiles, setUploadedFiles] = React.useState([]);
   const [showDocuments, setShowDocuments] = React.useState(false);
   const [showIds, setShowIds] = React.useState(false);
 
@@ -98,13 +95,7 @@ export default function Home() {
       const message = await createMessage(conversation.id,'user',question)
       
       router.push(`/${conversation.id}`);
-      // Continue with the existing query logic
-      // const result = await queryVectorCollection(question);
-      // setAnswer({
-      //   llmResponse: result.llmResponse || '',
-      //   documents: result.results.documents[0] || '',
-      //   ids: result.results.ids[0] || '',
-      // });
+
     } catch (error) {
       console.error('Error:', error);
       appendToAnswer('Error: Failed to get response from vector collection');
@@ -134,63 +125,13 @@ export default function Home() {
 
 
   return (
-<div className="flex h-screen bg-gray-100">
-      {/* Left Panel - File Upload */}
-      <div className="w-1/6 min-w-[200px] bg-white border-r border-gray-200 p-4 flex flex-col">
-        <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-600">
-            <span className="mr-2">↪</span>
-            Upload PDF files for QnA
-          </h3>
+    <div className="flex h-screen bg-gray-100">
+      {/* Left Panel - Added font-family styling */}
+      <div className="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col h-screen font-sans">
+        <div className="flex-1 overflow-y-auto p-4">
+          <FileUpload />
+          <ConversationsList userId="6156270a-2ead-4294-a6b1-d98ae892de6b" />
         </div>
-        
-        <div 
-          className="border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer mb-4"
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-        >
-          <p className="text-sm text-gray-600 mb-1">Drag and drop file here</p>
-          <p className="text-xs text-gray-500 mb-2">Limit 200MB per file • PDF</p>
-          <input
-            type="file"
-            id="file-upload"
-            className="hidden"
-            accept=".pdf"
-            onChange={handleFileUpload}
-            multiple
-          />
-          <button 
-            onClick={() => document.getElementById('file-upload').click()}
-            className="bg-white border border-gray-300 rounded px-3 py-1 text-sm"
-          >
-            Browse files
-          </button>
-        </div>
-
-        {/* Display uploaded files */}
-        <div className="space-y-2 mb-4">
-          {uploadedFiles.map((file, index) => (
-            <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
-              <div className="w-8 h-8 flex-shrink-0 mr-2 flex items-center justify-center">
-                <AiFillFilePdf className="text-red-500 w-6 h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 truncate">{file.name}</p>
-                <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <button 
-          className="mt-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center"
-          disabled={!file}
-          onClick={senddFilesForChunking}
-        >
-          <span className="mr-2">⚙️</span>
-          {loading ? 'File Uploading...' : 'Process'}
-        </button>
-        <ConversationsList userId="6156270a-2ead-4294-a6b1-d98ae892de6b" />
       </div>
 
       {/* Right Panel - Question Answer */}
