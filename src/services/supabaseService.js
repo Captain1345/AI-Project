@@ -7,7 +7,7 @@ export const createConversation = async (userId, title) => {
     .select();
 
   if (error) throw error;
-  console.log("CONVERSATION",data);
+  console.log("Conversation to Supabase",data);
   return data[0];
 };
 
@@ -21,7 +21,7 @@ export const createMessage = async (conversationId, sender, content, metadata = 
       metadata: metadata
     }])
     .select();
-    console.log("MESSAGE", data);
+    console.log("Message to Supabase", data);
   if (error) throw error;
   return data[0];
 };
@@ -46,4 +46,29 @@ export const fetchConversations = async (userId) => {
 
   if (error) throw error;
   return data || [];
+};
+
+export const deleteConversation = async (conversationId) => {
+
+  // First delete all messages associated with the conversation
+  const { error: messagesError } = await supabase
+    .from('messages')
+    .delete()
+    .eq('conversation_id', conversationId);
+
+  if (messagesError) {
+    throw messagesError;
+  }
+
+  // Then delete the conversation itself
+  const { error: conversationError } = await supabase
+    .from('conversations')
+    .delete()
+    .eq('id', conversationId);
+
+  if (conversationError) {
+    throw conversationError;
+  }
+
+  return true;
 };

@@ -34,13 +34,14 @@ export default function ConversationPage() {
           params.conversationId,
           'assistant',
           result.llmResponse || '',
-          result.results.documents[0],
-          result.results.ids[0],
+          {documents: result.results.documents[0],
+            ids:result.results.ids[0],}
         );
         // Refresh messages to include the new assistant response
         setFetchingNewMessages(true);
         const updatedData = await fetchMessages(params.conversationId);
         setMessages(updatedData);
+        console.log("Latest messages", updatedData)
         setFetchingNewMessages(false);
         setQueryingVector(false);
       }
@@ -71,12 +72,13 @@ export default function ConversationPage() {
           params.conversationId,
           'assistant',
           result.llmResponse || '',
-          result.results.documents[0],
-          result.results.ids[0],
+          {documents: result.results.documents[0],
+            ids:result.results.ids[0],}
         );
         // Refresh messages to include the new assistant response
         setFetchingNewMessages(true);
         const updatedData = await fetchMessages(params.conversationId);
+        console.log("Latest messages", updatedData)
         setMessages(updatedData);
         setFetchingNewMessages(false);
         setQueryingVector(false);
