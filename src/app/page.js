@@ -3,7 +3,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
-import generateGeminiResponse from '../utils/geminiResponse';
 import useAppStore from '../store/appStore';
 import {convertPDFsToChunks, addToVectorCollection } from '../services/api';
 import { createConversation, createMessage } from '../services/supabaseService.js';
@@ -44,42 +43,6 @@ export default function Home() {
 
   const handleDragOver = (e) => {
     e.preventDefault();
-  };
-
-  const handleGeminiSubmit = async (e) => {
-    e.preventDefault();
-    if (!question.trim()) return;
-
-    setLoading(true);
-    resetAnswer();
-    setIsStreaming(true);
-    
-    // Create a new AbortController for this request
-    const controller = new AbortController();
-    setAbortController(controller);
-
-    try {
-      await generateGeminiResponse(
-        question,
-        (chunk) => {
-          if (!controller.signal.aborted) {
-            appendToAnswer(chunk);
-          }
-        },
-        controller.signal
-      );
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('Request was cancelled');
-      } else {
-        console.error('Error:', error);
-        appendToAnswer('Error: Failed to get response from AI');
-      }
-    } finally {
-      setLoading(false);
-      setIsStreaming(false);
-      setAbortController(null);
-    }
   };
 
   const handleSubmit = async (e) => {
