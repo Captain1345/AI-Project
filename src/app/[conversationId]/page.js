@@ -29,7 +29,9 @@ export default function ConversationPage() {
       // Check if there are messages and if the latest message is from a user
       if (data.length > 0 && data[data.length-1].sender === 'user') {
         setQueryingVector(true);
-        const result = await queryVectorCollection(data[data.length-1].content);
+        let conversationHistory= data;
+        let lastMessageSent=data[data.length-1].content
+        const result = await queryVectorCollection(conversationHistory, lastMessageSent);
         await createMessage(
           params.conversationId,
           'assistant',
@@ -67,7 +69,9 @@ export default function ConversationPage() {
       // Check if there are messages and if the latest message is from a user
       if (data.length > 0 && data[data.length-1].sender === 'user') {
         setQueryingVector(true);
-        const result = await queryVectorCollection(data[data.length-1].content);
+        let conversationHistory= data;
+        let lastMessageSent=data[data.length-1].content
+        const result = await queryVectorCollection(conversationHistory, lastMessageSent);
         await createMessage(
           params.conversationId,
           'assistant',
