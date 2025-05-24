@@ -36,8 +36,8 @@ export default function ConversationPage() {
           params.conversationId,
           'assistant',
           result.llmResponse || '',
-          {documents: result.results.documents[0],
-            ids:result.results.ids[0],}
+          // {documents: result.results.documents[0],
+          //   ids:result.results.ids[0],}
         );
         // Refresh messages to include the new assistant response
         setFetchingNewMessages(true);
@@ -76,8 +76,8 @@ export default function ConversationPage() {
           params.conversationId,
           'assistant',
           result.llmResponse || '',
-          {documents: result.results.documents[0],
-            ids:result.results.ids[0],}
+          // {documents: result.results.documents[0],
+          //   ids:result.results.ids[0],}
         );
         // Refresh messages to include the new assistant response
         setFetchingNewMessages(true);
