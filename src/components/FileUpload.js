@@ -50,20 +50,13 @@ export default function FileUpload() {
   };
 
   return (
-    <div className="mb-4">
-      <div className="mb-4">
-        <h3 className="text-sm font-medium text-gray-600">
-          <span className="mr-2">↪</span>
-          Upload PDF files for QnA
-        </h3>
-      </div>
-      
+    <div className="mb-4 px-4">
       <div 
-        className="border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center cursor-pointer mb-4"
+        className="border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-start cursor-pointer mb-4"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
-        <p className="text-sm text-gray-600 mb-1">Drag and drop file here</p>
+        <p className="text-sm text-gray-600 mb-1">Drag and drop file here to give context to AI</p>
         <p className="text-xs text-gray-500 mb-2">Limit 200MB per file • PDF</p>
         <input
           type="file"

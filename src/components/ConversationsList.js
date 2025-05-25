@@ -47,10 +47,6 @@ export default function ConversationsList({ userId }) {
   return (
     <div className="flex-1 border-b border-gray-200">
       <div className="p-2">
-        <h3 className="text-sm font-medium text-gray-600 mb-2">
-          <span className="mr-2">💬</span>
-          Conversations
-        </h3>
         {loading ? (
           <div className="text-center text-gray-500 py-2">Loading conversations...</div>
         ) : (
@@ -80,8 +76,9 @@ export default function ConversationsList({ userId }) {
               </div>
             ))}
             {conversations.length === 0 && (
-              <div className="text-center text-gray-500 text-sm py-2">
-                No conversations yet
+              <div className="flex flex-col items-center justify-center text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-gray-900 font-medium mb-1">No interviews yet</div>
+                <div className="text-gray-500 text-sm">Start your first interview to see your history here!</div>
               </div>
             )}
           </div>
