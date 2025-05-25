@@ -115,10 +115,10 @@ export default function ConversationPage() {
               <div 
                 key={message.id} 
                 className={`rounded-lg p-4 max-w-[80%] ${message.sender === 'user' 
-                  ? 'ml-auto bg-blue-500 text-white' 
+                  ? 'ml-auto bg-sky-200 text-white' 
                   : 'mr-auto bg-gray-100 text-gray-800'}`}
               >
-                 <div className="text-gray-700 prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg">
+                <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
                   <ReactMarkdown>{message.content}</ReactMarkdown>
                 </div>
               </div>
