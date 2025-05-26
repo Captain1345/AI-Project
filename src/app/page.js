@@ -12,6 +12,10 @@ import ConversationsList from '../components/ConversationsList';
 import { AiOutlineCloudUpload } from 'react-icons/ai';
 import { MdQuiz } from 'react-icons/md';
 import { BsChatLeftText } from 'react-icons/bs';
+import { BsMic } from 'react-icons/bs'; // Import the microphone icon
+import useAudioRecorder from '../utils/useAudioRecorder';
+import { uploadAudio, transcribeAudio, pollTranscription } from '../utils/assemblyai';
+
 
 export default function Home() {
   // Remove file-related state and functions
@@ -19,6 +23,7 @@ export default function Home() {
     question, setQuestion,
     answer, resetAnswer, appendToAnswer, setAnswer,
     loading, setLoading,
+    isListening, setIsListening,
     isStreaming, setIsStreaming,
     setAbortController, cancelRequest
   } = useAppStore();
@@ -48,6 +53,31 @@ export default function Home() {
 
   const handleDragOver = (e) => {
     e.preventDefault();
+  };
+
+  const { isRecording, startRecording, stopRecording } = useAudioRecorder(async (blob) => {
+    const formData = new FormData();
+    formData.append('audio', blob, 'audio.webm');
+    const res = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: blob, // If your API expects raw binary, otherwise use formData
+    });
+    const data = await res.json();
+    if (data.text) {
+      setQuestion(data.text);
+    } else {
+      alert(data.error || 'Transcription failed');
+    }
+  });
+  
+  const handleMicClick = () => {
+    if (isRecording) {
+      stopRecording();
+      setIsListening(false);
+    } else {
+      startRecording();
+      setIsListening(true);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -163,6 +193,14 @@ export default function Home() {
                       <span className="text-red-500">⏹</span>
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleMicClick}
+                    className={`p-2 hover:bg-gray-100 rounded-full ${isListening ? 'bg-blue-100' : ''}`}
+                    title={isListening ? 'Stop listening' : 'Start voice input'}
+                  >
+                    <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
+                  </button>
                   <button 
                     onClick={handleSubmit}
                     disabled={loading || !question.trim()}
@@ -262,3 +300,4 @@ export default function Home() {
     </div>
   );
 }
+
