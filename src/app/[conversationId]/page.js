@@ -18,13 +18,48 @@ export default function ConversationPage() {
   const [initialLoading, setInitialLoading] = useState(true); // For initial page load
   const [queryingVector, setQueryingVector] = useState(false); // For vector collection queries
   const [fetchingNewMessages, setFetchingNewMessages] = useState(false); // For fetching new messages
-
+  const [audioMap, setAudioMap] = useState({});
   const { isListening, setIsListening } = useAppStore(); // Get isListening state and setter
 
   useEffect(() => {
     loadMessages();
   }, [params.conversationId]);
 
+
+  const getSarvamTTSAudioFromAPI = async (text) => {
+    try {
+      const response = await fetch('/api/sarvam-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      if (!response.ok) throw new Error('TTS API error');
+      const data = await response.json();
+      return data.audio; // Adjust if your API returns a different key
+    } catch (e) {
+      console.error('TTS API error:', e);
+      return null;
+    }
+  };
+
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new window.SpeechSynthesisUtterance(text);
+      const setVoiceAndSpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const raviVoice = voices.find(v => v.name.includes('Female'));
+        if (raviVoice) {
+          utterance.voice = raviVoice; // This must be the object, not a string
+        }
+        window.speechSynthesis.speak(utterance);
+      };
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+      } else {
+        setVoiceAndSpeak();
+      }
+    }
+  };
   const loadMessages = async () => {
     try {
       setInitialLoading(true);
@@ -38,14 +73,25 @@ export default function ConversationPage() {
         let conversationHistory= data;
         let lastMessageSent=data[data.length-1].content
         const result = await queryVectorCollection(conversationHistory, lastMessageSent);
-        await createMessage(
+        const assistantMsg = await createMessage(
           params.conversationId,
           'assistant',
           result.llmResponse || '',
           // {documents: result.results.documents[0],
           //   ids:result.results.ids[0],}
         );
+        // if (result.llmResponse) {
+        //   try {
+        //     const base64Audio = await getSarvamTTSAudioFromAPI(result.llmResponse);
+        //     if (base64Audio) {
+        //       const audioBlob = new Blob([Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
+        //       const audioURL = URL.createObjectURL(audioBlob);
+        //       setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
+        //     }
+        //   } catch (e) { console.error('TTS error', e); }
+        // }
         // Refresh messages to include the new assistant response
+        speakText(result.llmResponse);
         setFetchingNewMessages(true);
         const updatedData = await fetchMessages(params.conversationId);
         setMessages(updatedData);
@@ -78,14 +124,26 @@ export default function ConversationPage() {
         let conversationHistory= data;
         let lastMessageSent=data[data.length-1].content
         const result = await queryVectorCollection(conversationHistory, lastMessageSent);
-        await createMessage(
+        const assistantMsg = await createMessage(
           params.conversationId,
           'assistant',
           result.llmResponse || '',
           // {documents: result.results.documents[0],
           //   ids:result.results.ids[0],}
         );
+        // if (result.llmResponse) {
+        //   try {
+        //     const base64Audio = await getSarvamTTSAudioFromAPI(result.llmResponse);
+        //     if (base64Audio) {
+        //       const audioBlob = new Blob([Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
+        //       const audioURL = URL.createObjectURL(audioBlob);
+        //       setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
+        //     }
+        //   } catch (e) { console.error('TTS error', e); }
+        // }
         // Refresh messages to include the new assistant response
+
+        speakText(result.llmResponse);
         setFetchingNewMessages(true);
         const updatedData = await fetchMessages(params.conversationId);
         console.log("Latest messages", updatedData)
@@ -153,6 +211,9 @@ export default function ConversationPage() {
                 <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
                   <ReactMarkdown>{message.content}</ReactMarkdown>
                 </div>
+                {message.sender === 'assistant' && audioMap[message.id] && (
+                  <audio controls src={audioMap[message.id]} />
+                )}
               </div>
             ))}
             {queryingVector && (
