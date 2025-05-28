@@ -166,7 +166,13 @@ export default function ConversationPage() {
     }
   };
 
-  const { isRecording, startRecording, stopRecording } = useAudioRecorder(async (blob) => {
+  const { isRecording, startRecording, stopRecording, hasVoiceActivity } = useAudioRecorder(async (blob) => {
+    const hasVoice = await hasVoiceActivity();
+    if (!hasVoice) {
+      // Handle silence
+      console.log("Silence detected", hasVoice);
+      return;
+    }
     const formData = new FormData();
     formData.append('audio', blob, 'recording.wav');
     const response = await fetch('/api/transcribe', {
