@@ -49,6 +49,14 @@ export default function FileUpload() {
     }
   };
 
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    if (file && uploadedFiles.indexOf(file) === index) {
+      setFile(null);
+      console.log("File Removed from Browser");
+    }
+  };
+
   return (
     <div className="mb-4 px-4">
       <div 
@@ -74,7 +82,7 @@ export default function FileUpload() {
         </button>
       </div>
 
-      {/* Display uploaded files */}
+      {/* Display uploaded files with delete option */}
       <div className="space-y-2 mb-4">
         {uploadedFiles.map((file, index) => (
           <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
@@ -85,6 +93,13 @@ export default function FileUpload() {
               <p className="text-sm text-gray-900 truncate">{file.name}</p>
               <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
+            <button 
+              onClick={() => removeFile(index)}
+              className="ml-2 text-red-500 hover:text-red-700"
+              title="Remove file"
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>
