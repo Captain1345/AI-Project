@@ -31,10 +31,10 @@ export default function LeftSidebar() {
                 </div>
               )}
           </div>
-          <button className="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 font-medium text-gray-800 focus:outline-none">
+          <Link href="/question-list" className="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 font-medium text-gray-800 focus:outline-none">
             <MdQuiz className="w-5 h-5" />
             <span>Question Bank</span>
-          </button>
+          </Link>
         </nav>
         <div className="flex items-center gap-2 px-4 py-2 mb-2">
           <BsChatLeftText className="w-5 h-5 text-gray-700" />
