@@ -1,4 +1,5 @@
 'use client';
+import { UserButton } from "@clerk/nextjs";
 import { AiOutlineCloudUpload } from 'react-icons/ai';
 import { MdQuiz } from 'react-icons/md';
 import { BsChatLeftText } from 'react-icons/bs';

@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import { useUser } from "@clerk/nextjs";
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import useAppStore from '../store/appStore';
 import {convertPDFsToChunks, addToVectorCollection } from '../services/api';
@@ -21,6 +21,7 @@ export default function Home() {
     setAbortController, cancelRequest
   } = useAppStore();
   const [showFileUpload, setShowFileUpload] = useState(true);
+  const { user } = useUser();
 
   const router = useRouter();
   // Copy all your existing functions here (handleFileUpload, handleDrop, etc.)
@@ -75,7 +76,8 @@ export default function Home() {
   
     try {
       // Use the new service function
-      const conversation = await createConversation('6156270a-2ead-4294-a6b1-d98ae892de6b', question);
+      console.log(user)
+      const conversation = await createConversation(user.id,question);
       const message = await createMessage(conversation.id,'user',question)
       
       router.push(`/${conversation.id}`);
@@ -108,7 +110,7 @@ export default function Home() {
 
 
   return (
-    <div className="flex-1 flex items-center justify-center h-screen">
+    <div className="flex-1 flex items-center justify-center h-screen">\
       <div className="w-full max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-800 mb-4 text-center">Better PM</h1>
         <div className="w-full relative">

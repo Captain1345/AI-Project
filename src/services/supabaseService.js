@@ -1,9 +1,10 @@
 import { supabase } from './supabaseClient';
 
+
 export const createConversation = async (userId, title) => {
   const { data, error } = await supabase
     .from('conversations')
-    .insert([{ user_id: userId, title }])
+    .insert([{ user_clerk_id: userId, title }])
     .select();
 
   if (error) throw error;
@@ -41,7 +42,7 @@ export const fetchConversations = async (userId) => {
   const { data, error } = await supabase
     .from('conversations')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_clerk_id', userId)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;

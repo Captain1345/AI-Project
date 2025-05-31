@@ -1,22 +1,23 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
 import { fetchConversations, deleteConversation } from '../services/supabaseService';
 
-export default function ConversationsList({ userId }) {
+export default function ConversationsList({}) {
   const router = useRouter();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
+  const { user } = useUser();
   useEffect(() => {
-    loadConversations();
-  }, [userId]);
+    loadConversations(user);
+  }, [user]);
 
-  const loadConversations = async () => {
+  const loadConversations = async (user) => {
     try {
       setLoading(true);
-      const data = await fetchConversations(userId);
+      const data = await fetchConversations(user.id);
       setConversations(data);
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -36,7 +37,7 @@ export default function ConversationsList({ userId }) {
       setDeleting(true);
       await deleteConversation(conversationId);
       // Refresh the conversations list
-      await loadConversations();
+      await loadConversations(user);
     } catch (error) {
       console.error('Error deleting conversation:', error);
       alert('Failed to delete conversation');
