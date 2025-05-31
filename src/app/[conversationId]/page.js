@@ -199,8 +199,8 @@ export default function ConversationPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 max-w-5xl mx-auto w-full">
         {initialLoading ? (
           <div className="text-center">Loading messages...</div>
         ) : messages.length === 0 ? (
@@ -212,7 +212,7 @@ export default function ConversationPage() {
                 key={message.id} 
                 className={`rounded-lg p-4 max-w-[80%] ${message.sender === 'user' 
                   ? 'ml-auto bg-sky-200 text-white' 
-                  : 'mr-auto bg-gray-100 text-gray-800'}`}
+                  : 'mr-auto bg-orange-50 text-zinc-800'}`}
               >
                 <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
                   <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -235,8 +235,8 @@ export default function ConversationPage() {
           </>
         )}
       </div>
-      <div className="border-t p-4">
-        <div className="flex items-center gap-2 max-w-4xl mx-auto">
+      <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white max-w-5xl mx-auto w-full">
+        <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center bg-white border rounded-full shadow-sm hover:shadow">
             <input
               type="text"
@@ -256,14 +256,14 @@ export default function ConversationPage() {
             >
               <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
             </button>
-            <div className="flex items-center px-2 space-x-1">
+            {/* <div className="flex items-center px-2 space-x-1">
               <button className="p-2 hover:bg-gray-100 rounded-full">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
                   <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   <path d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                 </svg>
               </button>
-            </div>
+            </div> */}
           </div>
           <button 
             onClick={handleSendUserMessage}

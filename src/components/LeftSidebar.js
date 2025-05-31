@@ -5,6 +5,7 @@ import { BsChatLeftText } from 'react-icons/bs';
 import FileUpload from './FileUpload';
 import ConversationsList from './ConversationsList';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function LeftSidebar() {
   const [showFileUpload, setShowFileUpload] = useState(true);
@@ -12,7 +13,9 @@ export default function LeftSidebar() {
   return (
     <div className="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col h-screen font-sans">
       <div className="flex flex-col h-full p-4">
-        <h1 className="text-2xl font-bold mb-8 text-center">Better PM</h1>
+        <Link href="/">
+          <h1 className="text-2xl font-bold mb-8 text-center cursor-pointer">Better PM</h1>
+        </Link>
         <nav className="space-y-2 mb-8">
           <div>
             <button className="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 font-medium text-gray-800 focus:outline-none"

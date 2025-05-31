@@ -108,48 +108,40 @@ export default function Home() {
 
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Right Panel - Question Answer */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Center the content vertically */}
-        <div className="flex-1 flex flex-col justify-center items-center px-8">
-          <div className="w-full max-w-3xl mx-auto">
-            <div className="flex flex-col items-center mb-8">
-              <h1 className="text-3xl font-semibold text-gray-800 mb-4">Better PM</h1>
-              <div className="w-full relative">
-                <input
-                  type="text"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !loading && question.trim()) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
-                  className="w-full border border-gray-300 rounded-full py-4 px-6 pr-32 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-                  placeholder="Ask anything"
-                  disabled={loading}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleMicClick}
-                    className={`p-2 hover:bg-gray-100 rounded-full ${isListening ? 'bg-blue-100' : ''}`}
-                    title={isListening ? 'Stop listening' : 'Start voice input'}
-                  >
-                    <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
-                  </button>
-                  <button 
-                    onClick={handleSubmit}
-                    disabled={loading || !question.trim()}
-                    className="bg-black text-white rounded-full p-3 px-6 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-                   >
-                    {loading ? 'Processing...' : 'Ask'}
-                  </button>
-                </div>
-              </div>
-            </div>
+    <div className="flex-1 flex items-center justify-center h-screen">
+      <div className="w-full max-w-3xl mx-auto">
+        <h1 className="text-3xl font-semibold text-gray-800 mb-4 text-center">Better PM</h1>
+        <div className="w-full relative">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !loading && question.trim()) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+            className="w-full border border-gray-300 rounded-full py-4 px-6 pr-32 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+            placeholder="Ask anything"
+            disabled={loading}
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleMicClick}
+              className={`p-2 hover:bg-gray-100 rounded-full ${isListening ? 'bg-blue-100' : ''}`}
+              title={isListening ? 'Stop listening' : 'Start voice input'}
+            >
+              <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
+            </button>
+            <button 
+              onClick={handleSubmit}
+              disabled={loading || !question.trim()}
+              className="bg-black text-white rounded-full p-3 px-6 text-sm font-medium hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? 'Processing...' : 'Ask'}
+            </button>
           </div>
         </div>
       </div>
