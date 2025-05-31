@@ -1,15 +1,15 @@
 "use client";
 
 import ReactMarkdown from 'react-markdown';
-
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createMessage, fetchMessages } from '../../services/supabaseService';
 import { queryVectorCollection } from '../../services/api';
 import useAppStore from '../../store/appStore'; // Import the app store
 import { BsMic } from 'react-icons/bs'; // Import the microphone icon
 import useAudioRecorder from '../../utils/useAudioRecorder';
 import { uploadAudio, transcribeAudio, pollTranscription } from '../../utils/assemblyai';
+import * as Popover from '@radix-ui/react-popover';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -20,11 +20,27 @@ export default function ConversationPage() {
   const [fetchingNewMessages, setFetchingNewMessages] = useState(false); // For fetching new messages
   const [audioMap, setAudioMap] = useState({});
   const { isListening, setIsListening } = useAppStore(); // Get isListening state and setter
+  const [showEndTooltip, setShowEndTooltip] = useState(false);
+  const tooltipRef = useRef(null);
 
   useEffect(() => {
     loadMessages();
   }, [params.conversationId]);
 
+  // Optional: Close tooltip when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        setShowEndTooltip(false);
+      }
+    }
+    if (showEndTooltip) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEndTooltip]);
 
   const getSarvamTTSAudioFromAPI = async (text) => {
     try {
@@ -198,90 +214,123 @@ export default function ConversationPage() {
     }
   };
 
+  const handleEndConversation = () => {
+    // Add your logic to end the conversation here
+    alert('Conversation ended!');
+    setShowEndTooltip(false);
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 max-w-5xl mx-auto w-full">
-        {initialLoading ? (
-          <div className="text-center">Loading messages...</div>
-        ) : messages.length === 0 ? (
-          <div className="text-center text-gray-500">No messages yet</div>
-        ) : (
-          <>
-            {messages.map((message) => (
-              <div 
-                key={message.id} 
-                className={`rounded-lg p-4 max-w-[80%] ${message.sender === 'user' 
-                  ? 'ml-auto bg-sky-200 text-white' 
-                  : 'mr-auto bg-orange-50 text-zinc-800'}`}
-              >
-                <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+      <div className="flex flex-col h-screen bg-gray-100">
+        <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 max-w-5xl mx-auto w-full">
+          {initialLoading ? (
+            <div className="text-center">Loading messages...</div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-gray-500">No messages yet</div>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <div 
+                  key={message.id} 
+                  className={`rounded-lg p-4 max-w-[80%] ${message.sender === 'user' 
+                    ? 'ml-auto bg-sky-200 text-white' 
+                    : 'mr-auto bg-orange-50 text-zinc-800'}`}
+                >
+                  <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                  {message.sender === 'assistant' && audioMap[message.id] && (
+                    <audio controls src={audioMap[message.id]} />
+                  )}
                 </div>
-                {message.sender === 'assistant' && audioMap[message.id] && (
-                  <audio controls src={audioMap[message.id]} />
-                )}
-              </div>
-            ))}
-            {queryingVector && (
-              <div className="mr-auto bg-gray-50 text-gray-500 rounded-lg p-4 max-w-[80%] animate-pulse">
-                AI is thinking...
-              </div>
-            )}
-            {fetchingNewMessages && !queryingVector && (
-              <div className="text-center text-gray-500 text-sm mt-2">
-                Loading new messages...
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white max-w-5xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center bg-white border rounded-full shadow-sm hover:shadow">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask anything"
-              className="flex-1 px-4 py-2 bg-transparent outline-none rounded-full"
-              disabled={queryingVector}
-            />
-            {/* Microphone Icon */}
-            <button
-              type="button"
-              onClick={handleMicClick}
-              className={`p-2 hover:bg-gray-100 rounded-full ${isListening ? 'bg-blue-100' : ''}`}
-              title={isListening ? 'Stop listening' : 'Start voice input'}
-            >
-              <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
-            </button>
-            {/* <div className="flex items-center px-2 space-x-1">
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
-                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                </svg>
+              ))}
+              {queryingVector && (
+                <div className="mr-auto bg-gray-50 text-gray-500 rounded-lg p-4 max-w-[80%] animate-pulse">
+                  AI is thinking...
+                </div>
+              )}
+              {fetchingNewMessages && !queryingVector && (
+                <div className="text-center text-gray-500 text-sm mt-2">
+                  Loading new messages...
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white max-w-5xl mx-auto w-full">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center bg-white border rounded-full shadow-sm hover:shadow">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask anything"
+                className="flex-1 px-4 py-2 bg-transparent outline-none rounded-full"
+                disabled={queryingVector}
+              />
+              {/* Microphone Icon */}
+              <button
+                type="button"
+                onClick={handleMicClick}
+                className={`p-2 hover:bg-gray-100 rounded-full ${isListening ? 'bg-blue-100' : ''}`}
+                title={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
               </button>
-            </div> */}
+              {/* <div className="flex items-center px-2 space-x-1">
+                <button className="p-2 hover:bg-gray-100 rounded-full">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
+                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                  </svg>
+                </button>
+              </div> */}
+            </div>
+            <button 
+              onClick={handleSendUserMessage}
+              className="p-2 hover:bg-gray-100 rounded-full"
+              disabled={queryingVector || !newMessage.trim()}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-5 h-5 ${queryingVector ? 'text-gray-300' : 'text-gray-700'}`}>
+                <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+            <Popover.Root open={showEndTooltip} onOpenChange={setShowEndTooltip}>
+              <Popover.Trigger asChild>
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-full relative"
+                  type="button"
+                  aria-label="Show end conversation options"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 01-2-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                  </svg>
+                </button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  side="top"
+                  align="end"
+                  className="z-50 bg-white border rounded shadow-lg px-4 py-2"
+                  sideOffset={8}
+                >
+                  <span
+                    className="text-red-600 hover:underline cursor-pointer"
+                    onClick={handleEndConversation}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleEndConversation(); }}
+                  >
+                    End Conversation
+                  </span>
+                  <Popover.Arrow className="fill-white" />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
           </div>
-          <button 
-            onClick={handleSendUserMessage}
-            className="p-2 hover:bg-gray-100 rounded-full"
-            disabled={queryingVector || !newMessage.trim()}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`w-5 h-5 ${queryingVector ? 'text-gray-300' : 'text-gray-700'}`}>
-              <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 01-2-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-          </button>
         </div>
       </div>
-    </div>
   );
 }
