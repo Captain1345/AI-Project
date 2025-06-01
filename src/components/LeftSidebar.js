@@ -8,7 +8,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export default function LeftSidebar() {
-  const [showFileUpload, setShowFileUpload] = useState(true);
+  const [showFileUpload, setShowFileUpload] = useState(false);
 
   return (
     <div className="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col h-screen font-sans">

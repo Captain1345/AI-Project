@@ -11,12 +11,12 @@ export default function ConversationsList({ userId }) {
 
   useEffect(() => {
     loadConversations();
-  }, [userId]);
+  }, []);
 
   const loadConversations = async () => {
     try {
       setLoading(true);
-      const data = await fetchConversations(userId);
+      const data = await fetchConversations();
       setConversations(data);
     } catch (error) {
       console.error('Error loading conversations:', error);

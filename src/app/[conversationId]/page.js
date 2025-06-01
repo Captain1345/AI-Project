@@ -84,7 +84,7 @@ export default function ConversationPage() {
       setInitialLoading(false);
       
       // Check if there are messages and if the latest message is from a user
-      if (data.length > 0 && data[data.length-1].sender === 'user') {
+      if (data.length > 0 && data[data.length-1].role === 'user') {
         setQueryingVector(true);
         let conversationHistory= data;
         let lastMessageSent=data[data.length-1].content
@@ -135,7 +135,7 @@ export default function ConversationPage() {
       setMessages(data);
       setFetchingNewMessages(true);
       // Check if there are messages and if the latest message is from a user
-      if (data.length > 0 && data[data.length-1].sender === 'user') {
+      if (data.length > 0 && data[data.length-1].role === 'user') {
         setQueryingVector(true);
         let conversationHistory= data;
         let lastMessageSent=data[data.length-1].content
@@ -232,14 +232,14 @@ export default function ConversationPage() {
               {messages.map((message) => (
                 <div 
                   key={message.id} 
-                  className={`rounded-lg p-4 max-w-[80%] ${message.sender === 'user' 
+                  className={`rounded-lg p-4 max-w-[80%] ${message.role === 'user' 
                     ? 'ml-auto bg-sky-200 text-white' 
                     : 'mr-auto bg-orange-50 text-zinc-800'}`}
                 >
-                  <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.sender === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
+                  <div className={`prose prose-sm max-w-none prose-p:text-lg prose-headings:text-xl prose-strong:text-lg ${message.role === 'user' ? 'text-black-200' : 'text-gray-700'}`}>
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
-                  {message.sender === 'assistant' && audioMap[message.id] && (
+                  {message.role === 'assistant' && audioMap[message.id] && (
                     <audio controls src={audioMap[message.id]} />
                   )}
                 </div>

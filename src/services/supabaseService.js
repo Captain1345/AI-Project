@@ -2,24 +2,25 @@
 import { createClient } from '../utils/supabase/client';
 
 export const createConversation = async (title) => {
-    const supabase = await createClient();
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
     .from('conversations')
     .insert([{ user_id: user.id, title }])
     .select();
-s
+
   if (error) throw error;
   console.log("Conversation to Supabase",data);
   return data[0];
 };
 
-export const createMessage = async (conversationId, sender, content, metadata = {}) => {
+export const createMessage = async (conversationId, role, content, metadata = {}) => {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('messages')
     .insert([{
       conversation_id: conversationId,
-      sender: sender,
+      role: role,
       content: content,
       metadata: metadata
     }])
@@ -30,6 +31,7 @@ export const createMessage = async (conversationId, sender, content, metadata = 
 };
 
 export const fetchMessages = async (conversationId) => {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('messages')
     .select('*')
@@ -40,11 +42,13 @@ export const fetchMessages = async (conversationId) => {
   return data || [];
 };
 
-export const fetchConversations = async (userId) => {
+export const fetchConversations = async () => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('conversations')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
@@ -52,6 +56,7 @@ export const fetchConversations = async (userId) => {
 };
 
 export const deleteConversation = async (conversationId) => {
+  const supabase = await createClient();
 
   // First delete all messages associated with the conversation
   const { error: messagesError } = await supabase

@@ -77,7 +77,7 @@ export default function Home() {
     
     try {
       // Use the new service function
-      const conversation = await createConversation('6156270a-2ead-4294-a6b1-d98ae892de6b', question);
+      const conversation = await createConversation(question);
       const message = await createMessage(conversation.id,'user',question)
       
       router.push(`/${conversation.id}`);
