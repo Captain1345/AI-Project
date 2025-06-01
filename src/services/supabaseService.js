@@ -1,11 +1,14 @@
-import { supabase } from './supabaseClient';
+//import { supabase } from './supabaseClient';
+import { createClient } from '../utils/supabase/client';
 
-export const createConversation = async (userId, title) => {
-  const { data, error } = await supabase
+export const createConversation = async (title) => {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
     .from('conversations')
-    .insert([{ user_id: userId, title }])
+    .insert([{ user_id: user.id, title }])
     .select();
-
+s
   if (error) throw error;
   console.log("Conversation to Supabase",data);
   return data[0];

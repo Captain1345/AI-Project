@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { BsMic } from 'react-icons/bs'; // Import the microphone icon
 import useAudioRecorder from '../utils/useAudioRecorder';
 import { uploadAudio, transcribeAudio, pollTranscription } from '../utils/assemblyai';
+import LogOut from '../components/LogOut';
 
 export default function Home() {
   // Remove file-related state and functions
@@ -22,6 +23,7 @@ export default function Home() {
   } = useAppStore();
   const [showFileUpload, setShowFileUpload] = useState(true);
 
+ 
   const router = useRouter();
   // Copy all your existing functions here (handleFileUpload, handleDrop, etc.)
   const handleFileUpload = (e) => {
@@ -72,7 +74,7 @@ export default function Home() {
     if (!question.trim()) return;
   
     setLoading(true);
-  
+    
     try {
       // Use the new service function
       const conversation = await createConversation('6156270a-2ead-4294-a6b1-d98ae892de6b', question);
@@ -108,6 +110,8 @@ export default function Home() {
 
 
   return (
+  <div className="">
+    <LogOut />
     <div className="flex-1 flex items-center justify-center h-screen">
       <div className="w-full max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-800 mb-4 text-center">Better PM</h1>
@@ -145,6 +149,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
