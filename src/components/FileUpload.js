@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { AiFillFilePdf } from 'react-icons/ai';
+import { FileTextIcon, Cross2Icon, GearIcon, UploadIcon } from '@radix-ui/react-icons';
 import { convertPDFsToChunks, addToVectorCollection } from '../services/api';
 
 export default function FileUpload() {
@@ -12,9 +12,8 @@ export default function FileUpload() {
   const handleFileUpload = (e) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      console.log("File Uploaded to Browser", newFiles);
       setUploadedFiles(prev => [...prev, ...newFiles]);
-      setFile(newFiles[0]); // Keep the first file as the active file for processing
+      setFile(newFiles[0]);
     }
   };
 
@@ -39,11 +38,8 @@ export default function FileUpload() {
       if (!result.raw_chunks) {
         throw new Error('No chunks received from PDF processing');
       }
-      console.log("File Converted To Chunks", result);
       const vectorCollectionResponse = await addToVectorCollection(result.raw_chunks, Object.keys(result.results)[0]);
-      console.log('Vector Collection Response:', vectorCollectionResponse);
     } catch (error) {
-      console.error('Error processing PDFs:', error);
       setError('Failed to process PDFs');
     } finally {
       setLoading(false);
@@ -54,65 +50,87 @@ export default function FileUpload() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
     if (file && uploadedFiles.indexOf(file) === index) {
       setFile(null);
-      console.log("File Removed from Browser");
     }
   };
 
   return (
     <div className="mb-4 px-4">
-      <div 
-        className="border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-start cursor-pointer mb-4"
+      <div
+        className="border-2 border-dashed border-blue-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer mb-4 bg-gradient-to-br from-white via-blue-50 to-blue-100 transition-shadow hover:shadow-lg"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
-        <p className="text-sm text-gray-600 mb-1">Drag and drop file here to give context to AI</p>
-        <p className="text-xs text-gray-500 mb-2">Limit 200MB per file • PDF</p>
-        <input
-          type="file"
-          id="file-upload"
-          className="hidden"
-          accept=".pdf"
-          onChange={handleFileUpload}
-          multiple
-        />
-        <button 
-          onClick={() => document.getElementById('file-upload').click()}
-          className="bg-white border border-gray-300 rounded px-3 py-1 text-sm"
-        >
-          Browse files
-        </button>
+        <div className="flex flex-col items-center w-full">
+          <UploadIcon className="w-8 h-8 text-blue-500 mb-2" />
+          <p className="text-base text-gray-700 font-medium mb-1 text-center">
+            Drag & drop your PDF here
+          </p>
+          <p className="text-xs text-gray-500 mb-3 text-center">
+            Limit 200MB per file • PDF only
+          </p>
+          <input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            accept=".pdf"
+            onChange={handleFileUpload}
+            multiple
+          />
+          <button
+            onClick={() => document.getElementById('file-upload').click()}
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+            type="button"
+          >
+            <UploadIcon className="w-5 h-5" />
+            Browse files
+          </button>
+        </div>
       </div>
 
       {/* Display uploaded files with delete option */}
       <div className="space-y-2 mb-4">
         {uploadedFiles.map((file, index) => (
-          <div key={index} className="flex items-center p-2 bg-gray-50 rounded">
+          <div key={index} className="flex items-center p-2 bg-white border border-gray-200 rounded-lg shadow-sm">
             <div className="w-8 h-8 flex-shrink-0 mr-2 flex items-center justify-center">
-              <AiFillFilePdf className="text-red-500 w-6 h-6" />
+              <FileTextIcon className="text-blue-600 w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-900 truncate">{file.name}</p>
               <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
-            <button 
+            <button
               onClick={() => removeFile(index)}
-              className="ml-2 text-red-500 hover:text-red-700"
+              className="ml-2 text-red-500 hover:text-red-700 p-1 rounded transition"
               title="Remove file"
+              aria-label="Remove file"
+              type="button"
             >
-              ×
+              <Cross2Icon className="w-4 h-4" />
             </button>
           </div>
         ))}
       </div>
-      
-      <button 
-        className="mt-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md px-4 py-1 text-sm flex items-center"
-        disabled={!file}
+
+      <button
+        className={`mt-2 w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-base font-semibold transition
+          ${loading
+            ? 'bg-blue-300 text-white cursor-not-allowed'
+            : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg'}
+          disabled:opacity-60`}
+        disabled={!file || loading}
         onClick={senddFilesForChunking}
+        type="button"
       >
-        <span className="mr-2">⚙️</span>
-        {loading ? 'File Uploading...' : 'Process'}
+        <GearIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+        {loading ? 'Uploading...' : 'Process & Analyze'}
       </button>
+      {error && (
+        <div className="w-full flex items-center justify-center mt-3">
+          <span className="text-red-500 text-sm font-medium bg-red-50 px-3 py-1 rounded-lg shadow-sm">
+            {error}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

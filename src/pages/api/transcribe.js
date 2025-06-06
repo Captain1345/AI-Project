@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     const uploadRes = await assemblyai.files.upload(buffer);
     
     // Start the transcription
-    const transcript = await assemblyai.transcripts.transcribe({ audio_url: uploadRes, speech_model: "nano" });
+    const transcript = await assemblyai.transcripts.transcribe({ audio_url: uploadRes});
     
     // Poll for completion
     let completed = false;

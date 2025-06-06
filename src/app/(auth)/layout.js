@@ -11,7 +11,7 @@ export default async function AuthLayout({ children }) {
     redirect("/")
   }
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {children}
     </div>
   );

@@ -1,16 +1,13 @@
 'use client';
 
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
-import useAppStore from '../store/appStore';
-import {convertPDFsToChunks, addToVectorCollection } from '../services/api';
-import { createConversation, createMessage } from '../services/supabaseService.js';
+import useAppStore from '../../store/appStore';
+import {convertPDFsToChunks, addToVectorCollection } from '../../services/api';
+import { createConversation, createMessage } from '../../services/supabaseService.js';
 import { useState } from 'react';
 import { BsMic } from 'react-icons/bs'; // Import the microphone icon
-import useAudioRecorder from '../utils/useAudioRecorder';
-import { uploadAudio, transcribeAudio, pollTranscription } from '../utils/assemblyai';
-import LogOut from '../components/LogOut';
+import useAudioRecorder from '../../utils/useAudioRecorder';
+import { uploadAudio, transcribeAudio, pollTranscription } from '../../utils/assemblyai';
 
 export default function Home() {
   // Remove file-related state and functions
@@ -18,8 +15,6 @@ export default function Home() {
     question, setQuestion,
     loading, setLoading,
     isListening, setIsListening,
-    isStreaming, setIsStreaming,
-    setAbortController, cancelRequest
   } = useAppStore();
   const [showFileUpload, setShowFileUpload] = useState(true);
 
@@ -110,9 +105,8 @@ export default function Home() {
 
 
   return (
-  <div className="">
-    <LogOut />
-    <div className="flex-1 flex items-center justify-center h-screen">
+
+    <div className="h-full flex flex-col justify-center">
       <div className="w-full max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-800 mb-4 text-center">Better PM</h1>
         <div className="w-full relative">
@@ -149,7 +143,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

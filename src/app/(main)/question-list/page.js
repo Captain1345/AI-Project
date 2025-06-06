@@ -35,7 +35,7 @@ const questions = [
 
 export default function QuestionListPage() {
 	return (
-		<div className="min-h-screen bg-gray-50 px-8 py-8 w-full">
+		<div className="h-full bg-gray-100 px-8 py-8 w-full">
 			<div className="w-full">
 				<h1 className="text-3xl font-bold text-center mb-2">Question Library</h1>
 				<p className="text-center text-gray-500 mb-8">
