@@ -238,7 +238,7 @@ export default function ConversationPage() {
           {initialLoading ? (
             <div className="text-center">Loading messages...</div>
           ) : messages.length === 0 ? (
-            <div className="text-center text-gray-500">No messages yet</div>
+            <div className="text-center text-gray-500">No messages yet or the Interview has been deleted!</div>
           ) : (
             <>
               {messages.map((message) => (
