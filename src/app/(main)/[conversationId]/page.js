@@ -11,6 +11,7 @@ import useAudioRecorder from '../../../utils/useAudioRecorder';
 import { uploadAudio, transcribeAudio, pollTranscription } from '../../../utils/assemblyai';
 import * as Popover from '@radix-ui/react-popover';
 import { PaperPlaneIcon, MixerHorizontalIcon } from '@radix-ui/react-icons';
+import * as AlertDialog from '@radix-ui/react-alert-dialog';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -22,6 +23,8 @@ export default function ConversationPage() {
   const [audioMap, setAudioMap] = useState({});
   const { isListening, setIsListening } = useAppStore(); // Get isListening state and setter
   const [showEndTooltip, setShowEndTooltip] = useState(false);
+  const [showEndDialog, setShowEndDialog] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false); // <-- Add this line
   const tooltipRef = useRef(null);
 
   useEffect(() => {
@@ -217,7 +220,15 @@ export default function ConversationPage() {
 
   const handleEndConversation = () => {
     // Add your logic to end the conversation here
-    alert('Conversation ended!');
+    console.log("Ending conversation...");
+    setShowEndDialog(false);
+    setShowEndTooltip(false);
+  };
+
+    const handleGenerateFeedback = () => {
+    // Add your logic to end the conversation here
+    console.log("Generating feedback...");
+    setShowFeedbackDialog(false);
     setShowEndTooltip(false);
   };
 
@@ -279,14 +290,6 @@ export default function ConversationPage() {
               >
                 <BsMic className={`w-5 h-5 ${isListening ? 'text-blue-500' : 'text-gray-500'}`} />
               </button>
-              {/* <div className="flex items-center px-2 space-x-1">
-                <button className="p-2 hover:bg-gray-100 rounded-full">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
-                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    <path d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                  </svg>
-                </button>
-              </div> */}
             </div>
             <button 
               onClick={handleSendUserMessage}
@@ -317,14 +320,14 @@ export default function ConversationPage() {
                 >
                   <button
                     className="w-full text-left px-5 py-2 text-red-600 font-medium hover:bg-red-50 rounded-t-xl transition-colors focus:outline-none focus:bg-red-100"
-                    onClick={handleEndConversation}
+                    onClick={() => setShowEndDialog(true)}
                   >
                     End Conversation
                   </button>
                   <div className="h-px bg-gray-100 my-1" /> {/* <-- Use div as separator */}
                   <button
                     className="w-full text-left px-5 py-2 text-gray-700 font-medium hover:bg-gray-50 rounded-b-xl transition-colors focus:outline-none focus:bg-gray-100"
-                    onClick={() => alert('Feedback generation coming soon!')}
+                    onClick={() => setShowFeedbackDialog(true)} // <-- update this line
                   >
                     Generate Feedback
                   </button>
@@ -334,6 +337,73 @@ export default function ConversationPage() {
             </Popover.Root>
           </div>
         </div>
+
+        {/* Radix Alert Dialog for End Conversation */}
+        <AlertDialog.Root open={showEndDialog} onOpenChange={setShowEndDialog}>
+          <AlertDialog.Portal>
+            <AlertDialog.Overlay className="fixed inset-0 bg-black/30 z-50" />
+            <AlertDialog.Content className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+              <AlertDialog.Title className="text-lg font-semibold mb-2">End Conversation</AlertDialog.Title>
+              <AlertDialog.Description className="mb-4 text-gray-700">
+                Are you sure you want to end this conversation? You wont be able to resume this interview later.
+              </AlertDialog.Description>
+              <div className="flex justify-end gap-2">
+                <AlertDialog.Cancel asChild>
+                  <button
+                    className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <button
+                    className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                    onClick={() => {
+                      // Add your end conversation logic here
+                      handleEndConversation();
+                    }}
+                  >
+                    End
+                  </button>
+                </AlertDialog.Action>
+              </div>
+            </AlertDialog.Content>
+          </AlertDialog.Portal>
+        </AlertDialog.Root>
+
+        {/* Radix Alert Dialog for Generate Feedback */}
+        <AlertDialog.Root open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
+          <AlertDialog.Portal>
+            <AlertDialog.Overlay className="fixed inset-0 bg-black/30 z-50" />
+            <AlertDialog.Content className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+              <AlertDialog.Title className="text-lg font-semibold mb-2">Generate Feedback</AlertDialog.Title>
+              <AlertDialog.Description className="mb-4 text-gray-700">
+                Are you sure you want to generate feedback for this conversation? This will end the conversation & take a few moments.
+              </AlertDialog.Description>
+              <div className="flex justify-end gap-2">
+                <AlertDialog.Cancel asChild>
+                  <button
+                    className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <button
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={() => {
+                      // Add your feedback generation logic here
+                      handleGenerateFeedback();
+                      // Optionally show a toast or loading state
+                    }}
+                  >
+                    Generate
+                  </button>
+                </AlertDialog.Action>
+              </div>
+            </AlertDialog.Content>
+          </AlertDialog.Portal>
+        </AlertDialog.Root>
       </div>
   );
 }
