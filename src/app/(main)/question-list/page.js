@@ -88,8 +88,8 @@ export default function QuestionListPage() {
     }, [filteredQuestions.length, pageCount]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 px-4 py-10 flex justify-center">
-            <div className="w-full max-w-5xl">
+        <div className="bg-gradient-to-br from-gray-50 to-blue-50 px-4 flex justify-center">
+            <div className="w-full max-w-5xl py-10">
                 <h1 className="text-4xl font-extrabold text-center mb-2 text-gray-900">Question Library</h1>
                 <p className="text-center text-gray-500 mb-8">
                     Browse and search through our collection of product management interview questions

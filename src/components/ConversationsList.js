@@ -69,9 +69,12 @@ export default function ConversationsList({ userId }) {
               >
                 <button
                   onClick={() => router.push(`/${conversation.id}`)}
-                  className="flex-1 flex items-start justify-between px-2 py-1.5 w-full"
+                  className="flex-1 flex items-start justify-between px-2 py-1.5 w-full max-w-full"
+                  style={{ minWidth: 0 }}
                 >
-                  <div className="text-sm font-medium text-gray-900 break-words pr-2 text-left">
+                  <div
+                    className="text-sm font-medium text-gray-900 break-words whitespace-normal pr-2 text-left max-w-full"
+                  >
                     {conversation.title || 'Untitled Conversation'}
                   </div>
                   <div
