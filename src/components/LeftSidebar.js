@@ -4,13 +4,24 @@ import FileUpload from './FileUpload';
 import ConversationsList from './ConversationsList';
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { LogOutUser } from '../actions/auth';
+import { getUser, LogOutUser } from '../actions/auth';
 import Image from 'next/image';
 
 export default function LeftSidebar() {
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const profileBtnRef = useRef(null);
+
+    React.useEffect(() => {
+    async function getUserDetails() {
+      const result = await getUser();
+      if (result.status === 'success') {
+        setUser(result.user);
+      }
+    }
+    getUserDetails();
+  }, []);
 
   const handleLogout = async () => {
     await LogOutUser();
@@ -98,7 +109,14 @@ export default function LeftSidebar() {
             onClick={e => e.stopPropagation()} 
           >
             <div className="px-4 pt-3 pb-2 text-gray-900 font-semibold text-base border-b border-gray-100">
-              Sumant Bagade
+              {user ? (
+                <>
+                  <div>{user.user_metadata?.username || user.email}</div>
+                  <div className="text-gray-500 text-xs">{user.email}</div>
+                </>
+              ) : (
+                <div>Loading...</div>
+              )}
             </div>
             <button className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition text-gray-700 text-sm"
               onClick={e => {
