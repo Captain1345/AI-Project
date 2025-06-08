@@ -51,6 +51,7 @@ export default function LoginPage() {
               height={48}
               className="w-full h-full"
             />
+            
           </div>
           <h2 className="text-2xl font-semibold text-gray-900">Welcome back</h2>
           <p className="mt-2 text-base text-gray-600">

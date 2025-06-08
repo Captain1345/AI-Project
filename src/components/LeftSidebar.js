@@ -5,6 +5,7 @@ import ConversationsList from './ConversationsList';
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { LogOutUser } from '../actions/auth';
+import Image from 'next/image';
 
 export default function LeftSidebar() {
   const [showFileUpload, setShowFileUpload] = useState(false);
@@ -39,7 +40,17 @@ export default function LeftSidebar() {
       {/* Top and scrollable area */}
       <div className="flex-1 flex flex-col p-4">
         <Link href="/">
-          <h1 className="text-2xl font-bold mb-8 text-center cursor-pointer">Better PM</h1>
+          <div className="flex items-center justify-center gap-3 mb-8 cursor-pointer">
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={36}
+              height={36}
+              className="w-9 h-9"
+              priority
+            />
+            <h1 className="text-2xl font-bold self-center">Better PM</h1>
+          </div>
         </Link>
         <nav className="space-y-2 mb-8">
           <div>

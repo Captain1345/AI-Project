@@ -1,0 +1,16 @@
+<!-- filepath: c:\Users\Sumant Bagade\AI-Project-Next\public\logo.svg -->
+<svg width="120" height="150" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7B6EF6"/>
+      <stop offset="100%" stop-color="#A7A3FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="10"  y="95" width="12" height="45" rx="6" fill="url(#barGradient)" />
+  <rect x="26"  y="60" width="12" height="80" rx="6" fill="url(#barGradient)" />
+  <rect x="42"  y="80" width="12" height="60" rx="6" fill="url(#barGradient)" />
+  <rect x="58"  y="30" width="12" height="110" rx="6" fill="url(#barGradient)" />
+  <rect x="74"  y="65" width="12" height="75" rx="6" fill="url(#barGradient)" />
+  <rect x="90"  y="110" width="12" height="30" rx="6" fill="url(#barGradient)" />
+  <rect x="106" y="50" width="12" height="90" rx="6" fill="url(#barGradient)" />
+</svg>
