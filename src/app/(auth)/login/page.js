@@ -1,13 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import * as Form from '@radix-ui/react-form';
 import { Button } from '@radix-ui/themes';
 import Image from 'next/image';
 import { FcGoogle } from 'react-icons/fc';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { LogInUser } from '../../../actions/auth';
 
 export default function LoginPage() {
@@ -18,17 +17,16 @@ export default function LoginPage() {
     password: ''
   });
 
+  const [errorMessage, setErrorMessage] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your signup logic here
     const result = await LogInUser(formData);
-
     if (result.status === 'success') {
-      // Redirect to the sign-in page or home page after successful signup
+      setErrorMessage('');
       router.push('/');
     } else {
-      // Handle signup error (e.g., show a messa
-      console.log(result.status);
+      setErrorMessage(result.message || 'An error occurred during login. Please try again.');
     }
   };
 
@@ -45,13 +43,12 @@ export default function LoginPage() {
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-6">
             <Image
-              src="/logo.svg"  // Add your logo in public folder
+              src="/logo.svg"
               alt="Logo"
               width={48}
               height={48}
               className="w-full h-full"
             />
-            
           </div>
           <h2 className="text-2xl font-semibold text-gray-900">Welcome back</h2>
           <p className="mt-2 text-base text-gray-600">
@@ -92,7 +89,11 @@ export default function LoginPage() {
                 </Form.Control>
               </Form.Field>
             </div>
-
+            {errorMessage && (
+              <div className="mb-4 text-red-600 text-sm font-medium" role="alert">
+                {errorMessage}
+              </div>
+            )}
             <button 
               type="submit"
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

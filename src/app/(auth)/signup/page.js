@@ -16,8 +16,20 @@ export default function SignUpPage() {
     password: ''
   });
 
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+
+    const validateEmail = (email) => {
+    // Simple email regex
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateEmail(formData.email)) {
+      setEmailErrorMessage('Invalid email format');
+      return;
+    }
     // Add your signup logic here
     const result = await SignUpUser(formData);
 
@@ -57,6 +69,7 @@ export default function SignUpPage() {
 
         <Form.Root className="space-y-4">
           <Form.Field name="username">
+            <Form.Label className="FormLabel">Username</Form.Label>
             <Form.Control asChild>
               <input
                 type="text"
@@ -71,6 +84,7 @@ export default function SignUpPage() {
           </Form.Field>
 
           <Form.Field name="email">
+            <Form.Label className="FormLabel">Email</Form.Label>
             <Form.Control asChild>
               <input
                 type="email"
@@ -82,9 +96,21 @@ export default function SignUpPage() {
                 required
               />
             </Form.Control>
+            <Form.Message className="FormMessage" match="valueMissing">
+              Please enter your email
+            </Form.Message>
+            <Form.Message className="FormMessage" match="typeMismatch">
+              Please provide a valid email
+            </Form.Message>
           </Form.Field>
+          {emailErrorMessage && (
+            <div className="mb-4 text-red-600 text-sm font-medium" role="alert">
+              {emailErrorMessage}
+            </div>
+          )}
 
           <Form.Field name="password">
+            <Form.Label className="FormLabel">Password</Form.Label>
             <Form.Control asChild>
               <input
                 type="password"
