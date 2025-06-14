@@ -1,5 +1,5 @@
 'use client';
-import { UploadIcon, ChatBubbleIcon, QuestionMarkCircledIcon, GearIcon, PaperPlaneIcon, ExitIcon } from '@radix-ui/react-icons';
+import { UploadIcon, ChatBubbleIcon, QuestionMarkCircledIcon, ExitIcon, HomeIcon } from '@radix-ui/react-icons';
 import FileUpload from './FileUpload';
 import ConversationsList from './ConversationsList';
 import React, { useState, useRef } from 'react';
@@ -64,6 +64,7 @@ export default function LeftSidebar() {
           </div>
         </Link>
         <nav className="space-y-2 mb-8">
+          {user?.email === 'sumant.bagade@moxey.ai'   && (
           <div>
             <button className="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 font-medium text-gray-800 focus:outline-none"
               onClick={() => setShowFileUpload((prev) => !prev)}
@@ -78,6 +79,15 @@ export default function LeftSidebar() {
               </div>
             )}
           </div>
+          )}
+          {/* Interview Option - styled with Tailwind */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 font-medium text-gray-800 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <HomeIcon className="w-5 h-5" />
+            <span>Interview</span>
+          </Link>
           <Link href="/question-list" className="w-full flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 font-medium text-gray-800 focus:outline-none">
             <QuestionMarkCircledIcon className="w-5 h-5" />
             <span>Question Bank</span>
