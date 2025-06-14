@@ -3,7 +3,8 @@ import * as Select from '@radix-ui/react-select';
 import { MagnifyingGlassIcon, ChevronDownIcon, CheckIcon, PlayIcon, ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
 import { useEffect, useState, Fragment } from 'react';
 import { getQuestionList } from '../../../actions/questionBank';
-
+import { createConversation, createMessage } from '../../../services/supabaseService.js';
+import { useRouter } from 'next/navigation';
 // Define categories on the frontend
 const CATEGORIES = [
     'Product Strategy',
@@ -48,6 +49,8 @@ export default function QuestionListPage() {
 
     const ITEMS_PER_PAGE = 10;
 
+    const router = useRouter();
+
     useEffect(() => {
         async function fetchQuestions() {
             setLoading(true);
@@ -86,6 +89,25 @@ export default function QuestionListPage() {
     useEffect(() => {
         if (page > pageCount) setPage(1);
     }, [filteredQuestions.length, pageCount]);
+
+
+    const startInterview = async (question) => {
+        console.log(question);
+        const AssistantQuery = `Greetings! Let's start the interview with the following question: ${question.question} of category ${question.category}`;
+        try {
+          const conversation = await createConversation(AssistantQuery);
+          const message = await createMessage(conversation.id,'assistant',AssistantQuery)
+          router.push(`/${conversation.id}`);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+    };
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!question.trim()) return;
+      };
 
     return (
         <div className="bg-gradient-to-br from-gray-50 to-blue-50 px-4 flex justify-center">
@@ -192,6 +214,7 @@ export default function QuestionListPage() {
                                             <button
                                                 className="bg-gray-900 hover:bg-blue-700 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition group-hover:scale-105"
                                                 aria-label="Start Interview"
+                                                onClick={() => startInterview(q)}
                                             >
                                                 <PlayIcon className="w-5 h-5" />
                                             </button>
