@@ -21,6 +21,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    // Check if form is valid before proceeding
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
     const result = await LogInUser(formData);
     if (result.status === 'success') {
       setErrorMessage('');
@@ -56,10 +63,22 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <Form.Root className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <Form.Root 
+          className="mt-8 space-y-6" 
+          onSubmit={handleSubmit}
+        >
           <div className="space-y-4">
             <div>
               <Form.Field name="email">
+                <div className="flex items-baseline justify-between">
+                  <Form.Label className="text-sm font-medium text-gray-700">Email</Form.Label>
+                  <Form.Message className="text-sm text-red-500" match="valueMissing">
+                    Please enter your email
+                  </Form.Message>
+                  <Form.Message className="text-sm text-red-500" match="typeMismatch">
+                    Please provide a valid email
+                  </Form.Message>
+                </div>
                 <Form.Control asChild>
                   <input
                     type="email"
@@ -67,14 +86,16 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="name@example.com"
-                    className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                     required
+                    pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
                   />
                 </Form.Control>
               </Form.Field>
             </div>
             <div>
               <Form.Field name="password">
+              <Form.Label className="text-sm font-medium text-gray-700">Password</Form.Label>
                 <Form.Control asChild>
                   <input
                     type="password"
@@ -90,7 +111,7 @@ export default function LoginPage() {
               </Form.Field>
             </div>
             {errorMessage && (
-              <div className="mb-4 text-red-600 text-sm font-medium" role="alert">
+              <div className="mb-4 font-medium text-sm text-red-500" role="alert">
                 {errorMessage}
               </div>
             )}

@@ -16,20 +16,17 @@ export default function SignUpPage() {
     password: ''
   });
 
-  const [emailErrorMessage, setEmailErrorMessage] = useState('');
 
-    const validateEmail = (email) => {
-    // Simple email regex
-    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateEmail(formData.email)) {
-      setEmailErrorMessage('Invalid email format');
+    const form = e.currentTarget;
+    // Check if form is valid before proceeding
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
+
     // Add your signup logic here
     const result = await SignUpUser(formData);
 
@@ -37,7 +34,7 @@ export default function SignUpPage() {
       // Redirect to the sign-in page or home page after successful signup
       router.push('/login');
     } else {
-      // Handle signup error (e.g., show a messa
+      // Handle signup error (e.g., show a message)
       console.log(result.status);
     }
   };
@@ -67,9 +64,22 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        <Form.Root className="space-y-4">
+        <Form.Root
+          className="space-y-4"
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
+        >
           <Form.Field name="username">
-            <Form.Label className="FormLabel">Username</Form.Label>
+            <div className="flex items-baseline justify-between">
+              <Form.Label className="text-sm font-medium text-gray-700">Username</Form.Label>
+              <Form.Message className="text-sm text-red-500" match="valueMissing">
+                Please enter a username
+              </Form.Message>
+              <Form.Message className="text-sm text-red-500" match="tooShort">
+                Username must be at least 4 characters
+              </Form.Message>
+            </div>
             <Form.Control asChild>
               <input
                 type="text"
@@ -77,14 +87,23 @@ export default function SignUpPage() {
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 required
+                minLength={4}
               />
             </Form.Control>
           </Form.Field>
 
           <Form.Field name="email">
-            <Form.Label className="FormLabel">Email</Form.Label>
+            <div className="flex items-baseline justify-between">
+              <Form.Label className="text-sm font-medium text-gray-700">Email</Form.Label>
+              <Form.Message className="text-sm text-red-500" match="valueMissing">
+                Please enter your email
+              </Form.Message>
+              <Form.Message className="text-sm text-red-500" match="patternMismatch">
+                Please enter a valid email address
+              </Form.Message>
+            </div>
             <Form.Control asChild>
               <input
                 type="email"
@@ -92,25 +111,23 @@ export default function SignUpPage() {
                 placeholder="name@example.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 required
+                pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
               />
             </Form.Control>
-            <Form.Message className="FormMessage" match="valueMissing">
-              Please enter your email
-            </Form.Message>
-            <Form.Message className="FormMessage" match="typeMismatch">
-              Please provide a valid email
-            </Form.Message>
           </Form.Field>
-          {emailErrorMessage && (
-            <div className="mb-4 text-red-600 text-sm font-medium" role="alert">
-              {emailErrorMessage}
-            </div>
-          )}
 
           <Form.Field name="password">
-            <Form.Label className="FormLabel">Password</Form.Label>
+            <div className="flex items-baseline justify-between">
+              <Form.Label className="text-sm font-medium text-gray-700">Password</Form.Label>
+              <Form.Message className="text-sm text-red-500" match="valueMissing">
+                Please enter a password
+              </Form.Message>
+              <Form.Message className="text-sm text-red-500" match="tooShort">
+                Password must be at least 8 characters
+              </Form.Message>
+            </div>
             <Form.Control asChild>
               <input
                 type="password"
@@ -118,16 +135,15 @@ export default function SignUpPage() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 required
-                minLength={6}
+                minLength={8}
               />
             </Form.Control>
           </Form.Field>
 
           <button
             type="submit"
-            onClick={handleSubmit} // Handle form submissi
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Sign up
