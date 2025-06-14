@@ -18,8 +18,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         text,
         target_language_code: 'en-IN',
-        speaker: 'manisha',
-        model: 'bulbul:v2',
+        speaker: 'anushka',
+        model: 'bulbul:v2'
       }),
     });
     if (!sarvamRes.ok) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: err });
     }
     const data = await sarvamRes.json();
-    res.status(200).json({ audio: data.audios[0] });
+    res.status(200).json({ audios: data.audios });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

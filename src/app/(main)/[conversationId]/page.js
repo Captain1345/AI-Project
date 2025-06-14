@@ -12,6 +12,7 @@ import { uploadAudio, transcribeAudio, pollTranscription } from '../../../utils/
 import * as Popover from '@radix-ui/react-popover';
 import { PaperPlaneIcon, MixerHorizontalIcon } from '@radix-ui/react-icons';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import { mergeBase64WavSegmentsToBlob } from '../../../utils/audioUtils';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -70,7 +71,7 @@ export default function ConversationPage() {
       });
       if (!response.ok) throw new Error('TTS API error');
       const data = await response.json();
-      return data.audio; // Adjust if your API returns a different key
+      return data.audios; // Adjust if your API returns a different key
     } catch (e) {
       console.error('TTS API error:', e);
       return null;
@@ -115,16 +116,20 @@ export default function ConversationPage() {
           // {documents: result.results.documents[0],
           //   ids:result.results.ids[0],}
         );
-        // if (result.llmResponse) {
-        //   try {
-        //     const base64Audio = await getSarvamTTSAudioFromAPI(result.llmResponse);
-        //     if (base64Audio) {
-        //       const audioBlob = new Blob([Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
-        //       const audioURL = URL.createObjectURL(audioBlob);
-        //       setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
-        //     }
-        //   } catch (e) { console.error('TTS error', e); }
-        // }
+        if (result.llmResponse) {
+          try {
+            const base64Audios = await getSarvamTTSAudioFromAPI(result.llmResponse);
+            if (Array.isArray(base64Audios) && base64Audios.length > 0) {
+              const audioBlob = mergeBase64WavSegmentsToBlob(base64Audios);
+              if (audioBlob) {
+                const audioURL = URL.createObjectURL(audioBlob);
+                setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
+              }
+            }
+          } catch (e) {
+            console.error('TTS error', e);
+          }
+        }
         // Refresh messages to include the new assistant response
         speakText(result.llmResponse);
         setFetchingNewMessages(true);
@@ -166,19 +171,23 @@ export default function ConversationPage() {
           // {documents: result.results.documents[0],
           //   ids:result.results.ids[0],}
         );
-        // if (result.llmResponse) {
-        //   try {
-        //     const base64Audio = await getSarvamTTSAudioFromAPI(result.llmResponse);
-        //     if (base64Audio) {
-        //       const audioBlob = new Blob([Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
-        //       const audioURL = URL.createObjectURL(audioBlob);
-        //       setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
-        //     }
-        //   } catch (e) { console.error('TTS error', e); }
-        // }
+         if (result.llmResponse) {
+          try {
+            const base64Audios = await getSarvamTTSAudioFromAPI(result.llmResponse);
+            if (Array.isArray(base64Audios) && base64Audios.length > 0) {
+              const audioBlob = mergeBase64WavSegmentsToBlob(base64Audios);
+              if (audioBlob) {
+                const audioURL = URL.createObjectURL(audioBlob);
+                setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
+              }
+            }
+          } catch (e) {
+            console.error('TTS error', e);
+          }
+        }
         // Refresh messages to include the new assistant response
 
-        speakText(result.llmResponse);
+        //speakText(result.llmResponse);
         setFetchingNewMessages(true);
         const updatedData = await fetchMessages(params.conversationId);
         console.log("Latest messages", updatedData)
