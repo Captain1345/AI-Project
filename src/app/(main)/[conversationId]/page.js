@@ -3,7 +3,7 @@
 import ReactMarkdown from 'react-markdown';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { createMessage, fetchMessages } from '../../../services/supabaseService';
+import { createMessage, fetchMessages, endConversation, fetchConversationById } from '../../../services/supabaseService';
 import { queryVectorCollection } from '../../../services/api';
 import useAppStore from '../../../store/appStore'; // Import the app store
 import { BsMic } from 'react-icons/bs'; // Import the microphone icon
@@ -24,6 +24,7 @@ export default function ConversationPage() {
   const { isListening, setIsListening } = useAppStore(); // Get isListening state and setter
   const [showEndTooltip, setShowEndTooltip] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [conversationEnded, setConversationEnded] = useState(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false); // <-- Add this line
   const tooltipRef = useRef(null);
 
@@ -45,6 +46,20 @@ export default function ConversationPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showEndTooltip]);
+
+
+  useEffect(() => {
+    const fetchEndedStatus = async () => {
+      try {
+        const conversation = await fetchConversationById(params.conversationId);
+        setConversationEnded(!!conversation?.Ended);
+      } catch (e) {
+        // Optionally handle error
+        setConversationEnded(false);
+      }
+    };
+    fetchEndedStatus();
+  }, [params.conversationId]);
 
   const getSarvamTTSAudioFromAPI = async (text) => {
     try {
@@ -218,11 +233,15 @@ export default function ConversationPage() {
     }
   };
 
-  const handleEndConversation = () => {
-    // Add your logic to end the conversation here
-    console.log("Ending conversation...");
-    setShowEndDialog(false);
-    setShowEndTooltip(false);
+ const handleEndConversation = async () => {
+    try {
+      await endConversation(params.conversationId);
+      setConversationEnded(true);
+      setShowEndDialog(false);
+      setShowEndTooltip(false);
+    } catch (e) {
+      alert('Failed to end conversation.');
+    }
   };
 
     const handleGenerateFeedback = () => {
@@ -234,6 +253,11 @@ export default function ConversationPage() {
 
   return (
       <div className="flex flex-col h-screen bg-gray-100">
+      {conversationEnded && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 text-center font-semibold">
+          This conversation has ended.
+        </div>
+      )}
         <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 max-w-5xl mx-auto w-full">
           {initialLoading ? (
             <div className="text-center">Loading messages...</div>
@@ -270,6 +294,7 @@ export default function ConversationPage() {
           )}
         </div>
         <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white max-w-5xl mx-auto w-full">
+          {!conversationEnded && (
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center bg-white border rounded-full shadow-sm hover:shadow">
               <input
@@ -335,7 +360,7 @@ export default function ConversationPage() {
                 </Popover.Content>
               </Popover.Portal>
             </Popover.Root>
-          </div>
+          </div>)}
         </div>
 
         {/* Radix Alert Dialog for End Conversation */}

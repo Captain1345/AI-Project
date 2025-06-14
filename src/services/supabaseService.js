@@ -55,6 +55,17 @@ export const fetchConversations = async () => {
   return data || [];
 };
 
+export async function fetchConversationById(conversationId) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('Ended')
+    .eq('id', conversationId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export const deleteConversation = async (conversationId) => {
   const supabase = await createClient();
 
@@ -80,3 +91,15 @@ export const deleteConversation = async (conversationId) => {
 
   return true;
 };
+
+export async function endConversation(conversationId) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('conversations')
+    .update({ Ended: "TRUE" })
+    .eq('id', conversationId);
+  if (error) {
+    throw error;
+  }
+  return true;
+}
