@@ -16,6 +16,7 @@ import { mergeBase64WavSegmentsToBlob } from '../../../utils/audioUtils';
 
 export default function ConversationPage() {
   const params = useParams();
+  const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [initialLoading, setInitialLoading] = useState(true); // For initial page load
@@ -26,7 +27,8 @@ export default function ConversationPage() {
   const [showEndTooltip, setShowEndTooltip] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [conversationEnded, setConversationEnded] = useState(false);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false); // <-- Add this line
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false); 
+  const [generatingFeedback, setGeneratingFeedback] = useState(false);
   const tooltipRef = useRef(null);
 
   useEffect(() => {
@@ -253,11 +255,34 @@ export default function ConversationPage() {
     }
   };
 
-    const handleGenerateFeedback = () => {
-    // Add your logic to end the conversation here
-    console.log("Generating feedback...");
+  const handleGenerateFeedback = async () => {
+    setGeneratingFeedback(true);
     setShowFeedbackDialog(false);
-    setShowEndTooltip(false);
+    const allMessages = await fetchMessages(params.conversationId);
+    try {
+      const response = await fetch('/api/pm-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ conversationId: params.conversationId, allMessages }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate feedback');
+      }
+
+      const data = await response.json();
+      sessionStorage.setItem('feedbackData', data.llmFeedback);
+
+      // Navigate to the feedback page on success
+      router.push(`/${params.conversationId}/feedback`);
+
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+    } finally {
+      setGeneratingFeedback(false);
+    }
   };
 
   return (
@@ -361,7 +386,7 @@ export default function ConversationPage() {
                   <div className="h-px bg-gray-100 my-1" /> {/* <-- Use div as separator */}
                   <button
                     className="w-full text-left px-5 py-2 text-gray-700 font-medium hover:bg-gray-50 rounded-b-xl transition-colors focus:outline-none focus:bg-gray-100"
-                    onClick={() => setShowFeedbackDialog(true)} // <-- update this line
+                    onClick={() => setShowFeedbackDialog(true)} 
                   >
                     Generate Feedback
                   </button>
