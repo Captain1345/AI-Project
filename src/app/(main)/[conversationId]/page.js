@@ -173,20 +173,20 @@ export default function ConversationPage() {
           // {documents: result.results.documents[0],
           //   ids:result.results.ids[0],}
         );
-         if (result.llmResponse) {
-          try {
-            const base64Audios = await getSarvamTTSAudioFromAPI(result.llmResponse);
-            if (Array.isArray(base64Audios) && base64Audios.length > 0) {
-              const audioBlob = mergeBase64WavSegmentsToBlob(base64Audios);
-              if (audioBlob) {
-                const audioURL = URL.createObjectURL(audioBlob);
-                setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
-              }
-            }
-          } catch (e) {
-            console.error('TTS error', e);
-          }
-        }
+        //  if (result.llmResponse) {
+        //   try {
+        //     const base64Audios = await getSarvamTTSAudioFromAPI(result.llmResponse);
+        //     if (Array.isArray(base64Audios) && base64Audios.length > 0) {
+        //       const audioBlob = mergeBase64WavSegmentsToBlob(base64Audios);
+        //       if (audioBlob) {
+        //         const audioURL = URL.createObjectURL(audioBlob);
+        //         setAudioMap(prev => ({ ...prev, [assistantMsg.id]: audioURL }));
+        //       }
+        //     }
+        //   } catch (e) {
+        //     console.error('TTS error', e);
+        //   }
+        // }
         // Refresh messages to include the new assistant response
 
         //speakText(result.llmResponse);
@@ -259,13 +259,16 @@ export default function ConversationPage() {
     setGeneratingFeedback(true);
     setShowFeedbackDialog(false);
     const allMessages = await fetchMessages(params.conversationId);
+    const conversation = await fetchConversationById(params.conversationId);
+    console.log("Conversation", conversation)
+    const {question,category} = conversation;
     try {
       const response = await fetch('/api/pm-feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ conversationId: params.conversationId, allMessages }),
+        body: JSON.stringify({ conversationId: params.conversationId, allMessages, question, category }),
       });
 
       if (!response.ok) {

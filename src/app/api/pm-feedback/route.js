@@ -2,13 +2,19 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { conversationId, allMessages } = await request.json();
+    const { conversationId, allMessages, question, category } = await request.json();
 
     if (!conversationId) {
       return NextResponse.json({ error: 'Missing conversationId' }, { status: 400 });
     }
     if(!allMessages){
       return NextResponse.json({ error: 'Missing allMessages' }, { status: 400 });
+    }
+    if(!question){
+      return NextResponse.json({ error: 'Missing question' }, { status: 400 });
+    }
+    if(!category){
+      return NextResponse.json({ error: 'Missing category' }, { status: 400 });
     }
     // Forward the request to the Python microservice
     const pythonServiceUrl = 'http://localhost:8002/pm-feedback'; // Assuming this is the endpoint
@@ -17,7 +23,7 @@ export async function POST(request) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ conversation_id: conversationId, allMessages }), // Match Python service's expected payload
+      body: JSON.stringify({ conversation_id: conversationId, allMessages, question, category }), // Match Python service's expected payload
     });
 
     if (!response.ok) {

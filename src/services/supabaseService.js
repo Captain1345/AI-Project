@@ -1,16 +1,29 @@
 //import { supabase } from './supabaseClient';
 import { createClient } from '../utils/supabase/client';
 
-export const createConversation = async (title) => {
+export const createConversation = async (title, question, category) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    const conversationData = {
+        user_id: user.id,
+        title,
+    };
+
+    if (question) {
+        conversationData.question = question;
+    }
+    if (category) {
+        conversationData.category = category;
+    }
+
     const { data, error } = await supabase
-    .from('conversations')
-    .insert([{ user_id: user.id, title }])
-    .select();
+        .from('conversations')
+        .insert([conversationData])
+        .select();
 
   if (error) throw error;
-  console.log("Conversation to Supabase",data);
+  console.log("Conversation to Supabase", data);
   return data[0];
 };
 
@@ -59,7 +72,7 @@ export async function fetchConversationById(conversationId) {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('conversations')
-    .select('Ended')
+    .select('*')
     .eq('id', conversationId)
     .single();
   if (error) throw error;

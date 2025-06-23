@@ -91,11 +91,11 @@ export default function QuestionListPage() {
     }, [filteredQuestions.length, pageCount]);
 
 
-    const startInterview = async (question) => {
-        console.log(question);
-        const AssistantQuery = `Greetings! Let's start the interview with the following question: ${question.question} of category ${question.category}`;
+    const startInterview = async (selectedQuestion) => {
+        const {question,category} = selectedQuestion;
+        const AssistantQuery = `Greetings! Let's start the interview with the following question: ${question}`;
         try {
-          const conversation = await createConversation(AssistantQuery);
+          const conversation = await createConversation(AssistantQuery,question,category);
           const message = await createMessage(conversation.id,'assistant',AssistantQuery)
           router.push(`/${conversation.id}`);
         } catch (error) {
