@@ -260,7 +260,6 @@ export default function ConversationPage() {
     setShowFeedbackDialog(false);
     const allMessages = await fetchMessages(params.conversationId);
     const conversation = await fetchConversationById(params.conversationId);
-    console.log("Conversation", conversation)
     const {question,category} = conversation;
     try {
       const response = await fetch('/api/pm-feedback', {
@@ -276,7 +275,7 @@ export default function ConversationPage() {
       }
 
       const data = await response.json();
-      sessionStorage.setItem('feedbackData', data.llmFeedback);
+      sessionStorage.setItem('feedbackData', JSON.stringify(data.llmFeedback));
 
       // Navigate to the feedback page on success
       router.push(`/${params.conversationId}/feedback`);
