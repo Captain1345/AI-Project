@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const queryVectorCollection = async (conversationHistory, lastMessageSent) => {
-  const response = await fetch('http://localhost:8001/api/vector-collection/query', {
+  const response = await fetch('api/query-interviewer', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

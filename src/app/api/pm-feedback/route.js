@@ -17,8 +17,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing category' }, { status: 400 });
     }
     // Forward the request to the Python microservice
-    const pythonServiceUrl = 'http://localhost:8002/pm-feedback'; // Assuming this is the endpoint
-    const response = await fetch(pythonServiceUrl, {
+    const pythonMicroserviceUrl = process.env.PYTHON_MICROSERVICE_URL;
+    const response = await fetch(`${pythonMicroserviceUrl}/pm-feedback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
