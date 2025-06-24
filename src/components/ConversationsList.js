@@ -23,6 +23,7 @@ export default function ConversationsList({ userId }) {
     try {
       setLoading(true);
       const data = await fetchConversations();
+      console.log(data)
       setConversations(data);
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -75,7 +76,7 @@ export default function ConversationsList({ userId }) {
                   <div
                     className="text-sm font-medium text-gray-900 break-words whitespace-normal pr-2 text-left max-w-full"
                   >
-                    {conversation.title || 'Untitled Conversation'}
+                    {conversation.question || 'Untitled Conversation'}
                   </div>
                   <div
                     onClick={(e) => handleDeleteClick(e, conversation.id)}

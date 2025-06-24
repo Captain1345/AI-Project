@@ -288,13 +288,13 @@ export default function ConversationPage() {
   };
 
   return (
-      <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex flex-col h-full">
       {conversationEnded && (
         <div className="bg-red-100 text-red-700 px-4 py-2 text-center font-semibold">
           This conversation has ended.
         </div>
       )}
-        <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 max-w-5xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-16 py-4 space-y-4 w-full">
           {initialLoading ? (
             <div className="text-center">Loading messages...</div>
           ) : messages.length === 0 ? (
@@ -317,7 +317,7 @@ export default function ConversationPage() {
                 </div>
               ))}
               {queryingVector && (
-                <div className="mr-auto bg-gray-50 text-gray-500 rounded-lg p-4 max-w-[80%] animate-pulse">
+                <div className="mr-auto bg-gray-50 text-gray-500 rounded-lg p-4 animate-pulse">
                   AI is thinking...
                 </div>
               )}
@@ -329,7 +329,7 @@ export default function ConversationPage() {
             </>
           )}
         </div>
-        <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white max-w-5xl mx-auto w-full">
+        <div className="border-t px-2 sm:px-6 md:px-16 py-4 bg-white w-full">
           {!conversationEnded && (
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center bg-white border rounded-full shadow-sm hover:shadow">

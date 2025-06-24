@@ -47,9 +47,9 @@ export default function LeftSidebar() {
   }, [profileMenuOpen]);
 
   return (
-    <div className="w-1/4 min-w-[300px] bg-white border-r border-gray-200 flex flex-col h-screen font-sans">
+    <div className="w-full flex flex-col h-full font-sans">
       {/* Top and scrollable area */}
-      <div className="flex-1 flex flex-col p-4">
+      <div className="flex-1 flex flex-col p-4 min-h-0">
         <Link href="/">
           <div className="flex items-center justify-center gap-3 mb-8 cursor-pointer">
             <Image
